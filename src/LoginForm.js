@@ -1,23 +1,23 @@
 import React from 'react';
-import Button from 'react-bootstrap/Button';
+import FormInput from './FormInput'
 import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 
 class LoginForm extends React.Component {
     //method yang WAJIB dimiliki oleh setiap component pada React
     render() {
         return (
             <Form>
-                <Form.Group className="mb-3">
-                    <Form.Label>Username</Form.Label>
-                    <Form.Control type="text" placeholder="masukkan username"></Form.Control>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" placeholder="masukkan password"></Form.Control>
-                </Form.Group>
-                <Button type="submit">
-                    Login
-                </Button>
+                <FormInput name="username" type="text" placeholder="Insert your username" label="Username" ></FormInput>
+                <FormInput name="password" type="password" placeholder="Insert your password" label="Password" ></FormInput>
+                <div className='row text-center m-0 d-flex'>
+                    <Button type="submit">
+                        Login
+                    </Button>
+                </div>
+                <div className='row text-center m-0 d-flex'>
+                <a className="py-2">Sign Up now!</a>
+                </div>
             </Form>
         );
     }
