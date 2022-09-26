@@ -1,8 +1,11 @@
+import 'semantic-ui-css/semantic.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import FormCenteredSmall from './FormCenteredSmall';
-import LoginForm from  './LoginForm';
-import SignUpForm from './SignUpForm';
+import LoginPage from './LoginPage';
+import SignUpPage from './SignUpPage';
+import MainLayout from './MainLayout';
+import ProductDetailModal from './ProductDetailModal';
+import ProductListPage from './ProductListPage';
 import {
     createBrowserRouter,
     RouterProvider,
@@ -15,12 +18,22 @@ const root = ReactDOM.createRoot(rootContainer);
 //client-side routing menggunakan react router
 const router = createBrowserRouter([
     {
+        path:"/",
+        element: <MainLayout><h1>Hello World</h1></MainLayout>
+    },
+    {
         path: "/signup",
-        element: <FormCenteredSmall bgColor="rgb(216, 216, 216)" title="SIGN UP"><SignUpForm></SignUpForm></FormCenteredSmall>
+        element: <SignUpPage></SignUpPage>
     },
     {
         path: "/login",
-        element: <FormCenteredSmall bgColor="rgb(216, 216, 216)" title="LOGIN"><LoginForm></LoginForm></FormCenteredSmall>
+        element: <LoginPage></LoginPage>
+    }, {
+        path: "/productList",
+        element: <ProductListPage></ProductListPage>
+    },{
+        path: "/modal",
+        element: <ProductDetailModal></ProductDetailModal>
     }
 ]);
 root.render(

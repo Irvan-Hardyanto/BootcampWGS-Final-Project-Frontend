@@ -28,39 +28,55 @@
       font-family: 'fontLogo';
       src: url('./fonts/modernpics.otf');
     }
-    #logo{
+
+    .numberInput .ui.button {
+      background-color: teal;
+      color: white;
+    }
+
+    .numberInput .ui.input>input {
+      border-color: teal;
+      color: teal;
+      font-weight: bold;
+      width: 50px;
+    }
+
+    #logo {
       font-family: fontLogo;
       font-size: 10em;
       line-height: 1em;
     }
+
+    html,
+    body {
+      height: 100%;
+    }
   </style>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"
+    integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"
+    integrity="sha512-dqw6X88iGgZlTsONxZK9ePmJEFrmHwpuMrsUChjAw1mRUhUITE5QU9pkcSox+ynfLhL15Sv2al5A0LVyDCmtUw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/components/modal.min.js"
+    integrity="sha512-aAW/TaSuYfyjTcMsaYP67Dwe0vI5d7ej9X7NJBPkhafB+D5kx57flRNo8+tOXWA0Gcq0MBmhPatrvn1YwvH9gQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <title>Sales Application</title>
 </head>
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root">
+  <div id="root" style="background-color: rgb(216, 216, 216);height: 100%;">
 
   </div>
-  <!-- <div class="container-fluid" style="height: 100vh; background-color: rgb(216, 216, 216);">
-    <div class="row align-items-center" style="height: 100vh;">
-      <div class="container py-3" style="width: 30vw; background-color: white;">
-        <div class="row justify-content-center">
-          <img src="./images/cart.png" style="width: 100px; height:auto;">
-        </div>
-        <div class="row">
-          <h1>LOGIN</h1>
-        </div>
-        <div class="row">
-        </div>
-      </div>
-    </div>
-  </div> -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-    crossorigin="anonymous"></script>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      $('.dropdown').dropdown({
+        // you can use any ui transition
+        transition: 'drop'
+      });
+    });
+  </script>
 </body>
 
 </html>
