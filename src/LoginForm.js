@@ -1,27 +1,20 @@
 import React from 'react';
-import FormInput from './FormInput'
-import { Button, Form } from 'semantic-ui-react'    
+import { Button, Form } from 'semantic-ui-react';
 
 class LoginForm extends React.Component {
     //method yang WAJIB dimiliki oleh setiap component pada React
     render() {
         return (
-            /*<Form>
-                <FormInput name="username" type="text" placeholder="Insert your username" label="Username" ></FormInput>
-                <FormInput name="password" type="password" placeholder="Insert your password" label="Password" ></FormInput>
-                <div className='row text-center m-0 d-flex'>
-                    <Button type="submit">
-                        Login
-                    </Button>
-                </div>
-                <div className='row text-center m-0 d-flex'>
-                <a className="py-2">Sign Up now!</a>
-                </div>
-            </Form>*/
             <Form>
-                <FormInput name="username" type="text" placeholder="Insert your username" label="Username" ></FormInput>
-                <FormInput name="password" type="password" placeholder="Insert your password" label="Password" ></FormInput>
-                <Button primary type='submit' style={{width: "100%"}}>Login</Button>
+                <Form.Field>
+                    <label>Username</label>
+                    <input type="text" placeholder="Insert your username" name="username" />
+                </Form.Field>
+                <Form.Field>
+                    <label>Password</label>
+                    <input type="password" placeholder="Insert your password" name="password" />
+                </Form.Field>
+                <Button primary type='submit' style={{ width: "100%" }}>Login</Button>
             </Form>
         );
     }
