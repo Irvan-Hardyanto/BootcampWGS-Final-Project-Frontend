@@ -1,6 +1,6 @@
 import React from 'react';
 import MainLayout from './MainLayout';
-import { Grid, Container, Button, Modal, Header, Message, Image, List, Label } from 'semantic-ui-react';
+import { Grid, Container, Button, Modal, Header, Message, Image, List } from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
 
 class CheckoutPage extends React.Component {

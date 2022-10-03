@@ -36,7 +36,7 @@ class ProductListPage extends React.Component {
     render() {
         return (
             <MainLayout columns={3}>
-                <CustomHeader height="25vh" imgSrc="./images/logo-pake-padding.png">
+                <CustomHeader placeholder="Type to search a product..." height="25vh" imgSrc="./images/logo-pake-padding.png">
                 </CustomHeader>
                 {/* <Content maxHeight="75vh" columns={4} overflow="auto"> */}
                 <Card.Group centered itemsPerRow={6}>

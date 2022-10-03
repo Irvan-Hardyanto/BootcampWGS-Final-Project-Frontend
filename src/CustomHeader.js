@@ -21,7 +21,7 @@ class CustomHeader extends React.Component {
                     </Header>
                 </Grid.Column>
                 <Grid.Column textAlign='center' width={10}>
-                    <Search placeholder="Type to search a product..." input={{ fluid: true }}></Search>
+                    <Search placeholder={this.props.placeholder} input={{ fluid: true }}></Search>
                 </Grid.Column>
                 <Grid.Column textAlign='center' width={3}>
                     <Button.Group color='teal'>
