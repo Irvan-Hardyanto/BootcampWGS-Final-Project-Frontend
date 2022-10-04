@@ -3,8 +3,7 @@ import { faker } from '@faker-js/faker';
 import MainLayout from './MainLayout';
 import CustomHeader from './CustomHeader';
 import ProductCard from './ProductCard';
-import Content from './Content';
-import { Grid, Card } from 'semantic-ui-react';
+import { Card } from 'semantic-ui-react';
 
 class ProductListPage extends React.Component {
     constructor(props) {

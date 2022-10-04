@@ -1,6 +1,5 @@
 import React from "react";
-import { Card, Icon, Image, Label } from 'semantic-ui-react'
-import ProductDetailButton from "./ProductDetailButton";
+import { Card, Image, Label } from 'semantic-ui-react'
 import ProductDetailModal from "./ProductDetailModal";
 
 class ProductCard extends React.Component {

@@ -1,6 +1,6 @@
 import React from 'react';
 import CustomHeader from './CustomHeader';
-import { Container, Grid, Header, Table, Image, Button } from 'semantic-ui-react';
+import { Container, Grid, Header, Table} from 'semantic-ui-react';
 
 class SellingListPage extends React.Component {
     render() {

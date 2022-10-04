@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Modal, Image, Grid, Message, Header, Icon, Input, Label } from 'semantic-ui-react';
+import { Button, Modal, Image, Grid, Message, Header, Icon} from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
 
 class ProductDetailModal extends React.Component {

@@ -91,7 +91,7 @@ const router = createBrowserRouter([
         path: "/login",
         element: <LoginPage></LoginPage>
     }, {
-        path: "/productList",
+        path: "/productlist",//ini HANYA bisa diakses oleh user dengan role customer yang SUDAH LOGIN
         element: <ProductListPage></ProductListPage>
     },{
         path: "/modal",

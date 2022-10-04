@@ -1,5 +1,5 @@
 import React from "react";
-import { List, Container, Grid, Header, Image, Button, Search, Checkbox, Segment, Message } from 'semantic-ui-react';
+import { List, Container, Grid, Header, Image, Search, Checkbox, Segment} from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
 
 //Penjelasan pembagian height setiap container pake persen:

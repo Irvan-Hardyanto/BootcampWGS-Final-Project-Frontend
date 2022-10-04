@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Grid, Header, Image, Button, Dropdown, Segment} from 'semantic-ui-react';
+import { Search, Grid, Header, Image, Button, Dropdown} from 'semantic-ui-react';
 
 class CustomHeader extends React.Component {
     constructor(props) {
