@@ -1,37 +1,35 @@
 import React from 'react';
-import { faker } from '@faker-js/faker';
 import MainLayout from './MainLayout';
 import CustomHeader from './CustomHeader';
 import ProductCard from './ProductCard';
 import { Card } from 'semantic-ui-react';
 
+import axios from 'axios';
+//pengennya pake .env, tapi undefined terus.
+const BASE_URL = "http://localhost:9000";
+
 class ProductListPage extends React.Component {
     constructor(props) {
         super(props);
+        
+        this.state={
+            products:[]
+        }
         this.getRndInteger = this.getRndInteger.bind(this);
         this.generateDummyProductData = this.generateDummyProductData.bind(this);
+        
+        const axiosInstance = axios.create({
+            baseURL: BASE_URL,
+        })
+
+        axiosInstance.get('/customer/productlist').then(response=>{
+            // console.log(response);
+            this.setState({products: response.data});
+        }).catch(error=>{
+            alert(error);
+        })
     }
 
-    // dikutip dari laman w3schools.com
-    // https://www.w3schools.com/js/js_random.asp
-    getRndInteger(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    generateDummyProductData = (productNum) => {
-        let products = [];
-        for (let i = 1; i <= productNum; i++) {
-            products.push({
-                name: faker.commerce.productName(),
-                description: faker.commerce.productDescription(),
-                price: this.getRndInteger(10000, 100000),
-                stock: this.getRndInteger(1, 100),
-                unit: '',
-                image: faker.image.food(this.getRndInteger(600,1000), this.getRndInteger(600,1000), false),
-            });
-        }
-        return products;
-    }
     render() {
         return (
             <MainLayout columns={3}>
@@ -39,7 +37,7 @@ class ProductListPage extends React.Component {
                 </CustomHeader>
                 {/* <Content maxHeight="75vh" columns={4} overflow="auto"> */}
                 <Card.Group centered itemsPerRow={6}>
-                    {this.generateDummyProductData(13).map((product, idx) => {
+                    {this.state.products.map((product, idx) => {
                         return <ProductCard name={product.name} imgSrc={product.image} price={product.price} description={product.description}></ProductCard>;
                     })}
                 </Card.Group>

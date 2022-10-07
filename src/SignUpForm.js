@@ -16,7 +16,8 @@ class SignUpForm extends React.Component {
             userNameError: false,
             passwordError: false,
             confPasswordError: false,
-            nameError: false
+            nameError: false,
+            loading: false
         }
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleUsernameChange = this.handleUsernameChange.bind(this);
@@ -32,7 +33,7 @@ class SignUpForm extends React.Component {
             this.setState({ passwordError: msg });
         } else if (param === "name") {
             this.setState({ nameError: msg });
-        } else if (param == "confPassword") {
+        } else if (param === "confPassword") {
             this.setState({ confPasswordError: msg });
         } else {
             alert(msg);
@@ -40,51 +41,52 @@ class SignUpForm extends React.Component {
     }
 
     handleNameChange(event) {
-        this.setState({ name: event.target.value });
-        this.setState({ nameError: false });
+        this.setState({ name: event.target.value, nameError: false });
     }
 
     handleUsernameChange(event) {
-        this.setState({ userName: event.target.value });
-        this.setState({ userNameError: false });
+        this.setState({ userName: event.target.value, userNameError: false });
     }
 
     handlePasswordChange(event) {
-        this.setState({ password: event.target.value });
-        this.setState({ passwordError: false });
+        this.setState({ password: event.target.value, passwordError: false });
     }
 
     handleConfPasswordChange(event) {
-        if(this.state.password !== event.target.value){
+        this.setState({ confPassword: event.target.value })
+        if (this.state.password !== event.target.value) {
             this.setState({ confPasswordError: 'Incorrect password confirmation!' });
-        }else{
-            this.setState({ confPassword: event.target.value });
+        } else {
             this.setState({ confPasswordError: false });
         }
     }
 
     handleFormSubmit(event) {
         event.preventDefault();
-        const axiosInstance = axios.create({
-            baseURL: BASE_URL,
-        })
+        this.setState({ loading: true }, () => {
+            const axiosInstance = axios.create({
+                baseURL: BASE_URL,
+            })
 
-        axiosInstance.post('/register', qs.stringify({
-            name: this.state.name,
-            userName: this.state.userName,
-            password: this.state.password,
-            confPassword: this.state.confPassword,
-        }), {
-            headers: { 'content-type': 'application/x-www-form-urlencoded' }
-        }).then(response => {
-            console.log(response);
-            //redirect ke halaman yang sesuai dengan role yang dimiliki
-        }).catch(errors => {
-            console.log(errors);
-            for (let i = 0; i < errors.response.data.length; i++) {
-                this.setErrorMessage(errors.response.data[i].param, errors.response.data[i].msg);
-            }
-        });
+            axiosInstance.post('/register', qs.stringify({
+                name: this.state.name,
+                userName: this.state.userName,
+                password: this.state.password,
+                confPassword: this.state.confPassword,
+            }), {
+                headers: { 'content-type': 'application/x-www-form-urlencoded' }
+            }).then(response => {
+                this.setState({ loading: false })
+                console.log(response);
+                //redirect ke halaman yang sesuai dengan role yang dimiliki
+            }).catch(errors => {
+                this.setState({loading : false})
+                console.log(errors);
+                for (let i = 0; i < errors.response.data.length; i++) {
+                    this.setErrorMessage(errors.response.data[i].param, errors.response.data[i].msg);
+                }
+            });
+        })
     }
 
     render() {
@@ -110,7 +112,7 @@ class SignUpForm extends React.Component {
                     {/* <label>Password Confirmation</label>
                     <input type="password" placeholder="Please re-type your password" name="confPassword" /> */}
                 </Form.Field>
-                <Button primary type='submit' style={{ width: "100%" }} onClick={this.handleFormSubmit}>Sign Up</Button>
+                <Button primary type='submit' style={{ width: "100%" }} onClick={this.handleFormSubmit} loading={this.state.loading}>Sign Up</Button>
             </Form>
         );
     }

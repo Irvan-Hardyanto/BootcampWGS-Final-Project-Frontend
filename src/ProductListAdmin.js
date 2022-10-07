@@ -1,13 +1,45 @@
 import React from 'react';
 import CustomHeader from './CustomHeader';
 import { List, Container, Grid, Header, Image, Button } from 'semantic-ui-react';
+import axios from 'axios';
+import AddProductModal from './AddProductModal';
+
+const BASE_URL = "http://localhost:9000";
 
 class ProductListAdmin extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            products: props.products//array of product objects.
+            products: [],//array of product objects.
+            modalEditProductOpen: false,
+            modalDeleteProductOpen: false
         }
+        const axiosInstance = axios.create({
+            baseURL: BASE_URL,
+        })
+
+        axiosInstance.get('/customer/productlist').then(response=>{
+            // console.log(response);
+            this.setState({products: response.data});
+        }).catch(error=>{
+            alert(error);
+        })
+    }
+
+    openModalEditProduct(){
+        this.setState({modalEditProductOpen: true});
+    }
+
+    closeModalEditProduct(){
+        this.setState({modalEditProductOpen: false});
+    }
+
+    openModalDeleteProduct(){
+        this.setState({modalDeleteProductOpen: true});
+    }
+
+    closeModalDeleteProduct(){
+        this.setState({modalDeleteProductOpen: false});
     }
 
     render() {
@@ -18,7 +50,16 @@ class ProductListAdmin extends React.Component {
                     <CustomHeader height="20vh" placeholder="Search an customer.." imgSrc="../images/logo-pake-padding.png"></CustomHeader>
                     <Grid.Row style={{ padding: "0px", height: "80vh" }}>
                         <Grid.Column>
-                            <Header as='h1'>PRODUCT LIST (ADMIN)</Header>
+                            <Grid verticalAlign='middle'>
+                                <Grid.Row>
+                                    <Grid.Column floated='left' width={6}>
+                                        <Header as='h1'>PRODUCT LIST (ADMIN)</Header>
+                                    </Grid.Column>
+                                    <Grid.Column floated='right' width={5}>
+                                        <AddProductModal></AddProductModal>
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
                             <Container style={{ maxHeight: "70vh", overflow: "Auto" }}>
                                 <List divided verticalAlign='middle' style={{ margin: "0px" }}>
                                     {this.state.products.map((product, idx) => {
@@ -27,7 +68,7 @@ class ProductListAdmin extends React.Component {
                                                 <Grid verticalAlign='middle' padded>
                                                     <Grid.Row columns={3}>
                                                         <Grid.Column width={2} style={{ padding: "0.2em 0px" }}>
-                                                            <Image src={product.image} fluid />
+                                                            <Image src={BASE_URL+'/product/picture/'+product.id} fluid />
                                                         </Grid.Column>
                                                         <Grid.Column width={10}>
                                                             <List.Content>
@@ -58,11 +99,6 @@ class ProductListAdmin extends React.Component {
                                                                         <td>{product.updatedAt}</td>
                                                                     </tr>
                                                                 </table>
-                                                                {/* <Header as='h3' style={{ marginBottom: "0.5em" }}>Product name: {product.name} </Header>
-                                                                <Header as='h4' style={{ marginBottom: "0.5em" }}>Price: Rp. {product.price.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}</Header>
-                                                                <Header as='h4' style={{ marginBottom: "0.5em" }}>Remaining Stock: {product.stock}</Header>
-                                                                <Header as='h4' style={{ marginBottom: "0.5em" }}>Added at : {product.createdAt}</Header>
-                                                                <Header as='h4' style={{ marginBottom: "0.5em" }}>Last updated at : {product.updatedAt}</Header> */}
                                                             </List.Content>
                                                         </Grid.Column>
                                                         <Grid.Column width={4}>
