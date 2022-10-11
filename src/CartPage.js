@@ -1,23 +1,25 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { List, Container, Grid, Header, Image, Search, Checkbox, Segment, Button } from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
 import { Link } from 'react-router-dom';
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { uncheckAllProduct, checkAllProduct, uncheckProduct, checkProduct } from "./reducers/CartSlice.js"
+import { uncheckAllProduct, checkAllProduct, uncheckProduct, checkProduct, editPurchaseQuantity } from "./reducers/CartSlice.js"
 //Penjelasan pembagian height setiap container pake persen:
 //https://stackoverflow.com/questions/14262938/child-with-max-height-100-overflows-parent
 
 //Skenario yg mungkin:
 //Pengguna menekan add to cart di halaman product list dan db nya kosong 
 //Pengguna menekan add to cart di halaman product list dan db nya masih ada.
+//ide dari: https://www.willmaster.com/library/manage-forms/checkbox-shopping-cart.php
 const CartPage = (props) => {
     const [isCheckedAll, setIsCheckedAll] = useState(false);
     const [totalPrice, setTotalPrice] = useState(0);
     const cartStore = useSelector((state) => state.cart.value);
     const dispatch = useDispatch();
 
-    useEffect(()=>{
+    //ketika ada produk yang di check atau uncheck, perbarui total harga nya
+    useEffect(() => {
         let sumPrice = 0;
         for (let product of cartStore) {
             if (product.checked) {
@@ -25,12 +27,11 @@ const CartPage = (props) => {
             }
         }
         setTotalPrice(sumPrice);
-    },[cartStore])
+        //PUT ke API => perbarui database nya
+    }, [cartStore])
 
-    const changePurchasedProductQuantity = (sselectedId, newQuantity) => {
-        const selectedProduct = cartStore.find((product) => {
-
-        })
+    const changePurchasedProductQuantity = (selectedId, newQuantity) => {
+        dispatch(editPurchaseQuantity({ id: selectedId, quantity: newQuantity }))
     }
 
     const handleMainCheckBoxClicked = (event, data) => {
@@ -92,7 +93,7 @@ const CartPage = (props) => {
                                                         <List.Content>
                                                             <Header as='h3' style={{ marginBottom: "0.5em" }}>{product.name} </Header>
                                                             <Header as='h4' style={{ marginBottom: "0.5em" }}>Rp. {product.price.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}</Header>
-                                                            <NumberInput className="numberInput" value={product.quantity.toString()} onChange={changePurchasedProductQuantity} />
+                                                            <NumberInput className="numberInput" value={product.quantity.toString()} onChange={(e) => changePurchasedProductQuantity(product.id, e)} />
                                                         </List.Content>
                                                     </Grid.Column>
                                                     <Grid.Column width={7}>
@@ -119,7 +120,9 @@ const CartPage = (props) => {
                 </Grid.Row>
                 <Grid.Row style={{ height: "10%", padding: "0px" }} columns={1}>
                     <Grid.Column width={7} floated='right' textAlign='right'>
-                        <Button size='big' color='green'>Checkout</Button>
+                        <Link to='/checkout' state={cartStore.filter((cartItem)=>cartItem.checked)}>
+                            <Button size='big' color='green'>Checkout</Button>
+                        </Link>
                         <Link to='/productlist'>
                             <Button size='big'>Back to Product List</Button>
                         </Link>

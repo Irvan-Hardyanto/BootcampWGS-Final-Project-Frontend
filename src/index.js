@@ -11,6 +11,7 @@ import CustomerListPage from './CustomerListPage';
 import SellingListPage from './SellingListPage';
 import ProductListAdmin from './ProductListAdmin';
 import CartPage from './CartPage';
+import PaymentPage from './PaymentPage';
 import { faker } from '@faker-js/faker';
 import {
     createBrowserRouter,
@@ -122,6 +123,9 @@ const router = createBrowserRouter([
     }, {
         path: "/cart",
         element: <CartPage products={generateDummyProductData(10)}></CartPage>
+    }, {
+        path: "/pay",
+        element: <PaymentPage></PaymentPage>
     }
 ]);
 root.render(

@@ -4,6 +4,17 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState={
     value:[]
 }
+
+//FORMAT 'STATE' nya:
+// product: {
+//     id
+//     image 
+//     name 
+//     price
+//     quantity
+//     unit
+//     checked
+// }
 export const cartSlice=createSlice({
     name:'cartReducer',
     initialState,
@@ -21,6 +32,9 @@ export const cartSlice=createSlice({
                 product.checked=false;
             }
         },
+        editPurchaseQuantity: (state,action)=>{
+            state.value.find((product)=>product.id===action.payload.id).quantity=action.payload.quantity
+        },
         checkProduct:(state,action)=>{
             state.value.find(product=>product.id===action.payload.id).checked=true;
         },
@@ -34,5 +48,5 @@ export const cartSlice=createSlice({
         }
     }
 })
-export const {addProduct,removeProduct,checkAllProduct,uncheckAllProduct,checkProduct,uncheckProduct} = cartSlice.actions;
+export const {addProduct,removeProduct,checkAllProduct,uncheckAllProduct,checkProduct,uncheckProduct,editPurchaseQuantity} = cartSlice.actions;
 export default cartSlice.reducer;
