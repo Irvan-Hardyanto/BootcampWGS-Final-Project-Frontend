@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Button, Modal, Icon, Form, TextArea, Image, Header } from 'semantic-ui-react';
 import axios from 'axios';
-import qs from 'qs';
 
 const BASE_URL = "http://localhost:9000";
 
@@ -22,6 +21,7 @@ class AddProductModal extends Component {
             stockError: false,
             imageError: false,
             unitError: false,
+            addProductLoading: false
         }
         this.openModalAddProduct = this.openModalAddProduct.bind(this);
         this.closeModalAddProduct = this.closeModalAddProduct.bind(this);
@@ -49,7 +49,7 @@ class AddProductModal extends Component {
         }else if (param === "unit") {
             this.setState({ unitError: msg })
         }else{
-            alert(msg);
+            alert('An error has been occured');
         }
     }
 
@@ -88,27 +88,32 @@ class AddProductModal extends Component {
 
     handleFormSubmit(event) {
         event.preventDefault();
-        const axiosInstance = axios.create({
-            baseURL: BASE_URL,
-        })
-        const formData = new FormData();
-
-        formData.append("name", this.state.name);
-        formData.append("description", this.state.description);
-        formData.append("price", this.state.price);
-        formData.append("stock", this.state.stock);
-        formData.append("image", this.state.image);//ini jadi error
-        formData.append("unit", this.state.unit);
-
-        axiosInstance.post('/product/add', formData, {
-            headers: { 'content-type': 'multipart/form-data; boundary=-----rick' }
-        }).then(response => {
-            console.log(response);
-        }).catch(errors => {
-            for (let i = 0; i < errors.response.data.length; i++) {
-                this.setErrorMessage(errors.response.data[i].param, errors.response.data[i].msg)
-            }
-            console.log(errors);
+        this.setState({addProductLoading: true},()=>{
+            const axiosInstance = axios.create({
+                baseURL: BASE_URL,
+            })
+            //pakai form data karena ada gambar,
+            //sama saja dengan form yang enctype nya multipart/form-data
+            const formData = new FormData();
+    
+            formData.append("name", this.state.name);
+            formData.append("description", this.state.description);
+            formData.append("price", this.state.price);
+            formData.append("stock", this.state.stock);
+            formData.append("image", this.state.image);//ini jadi error
+            formData.append("unit", this.state.unit);
+            axiosInstance.post('/product/add', formData, {
+                headers: { 'content-type': 'multipart/form-data; boundary=-----rick' }
+            }).then(response => {
+                this.setState({addProductLoading:false, modalAddProductOpen: false});
+                console.log(response);
+            }).catch(errors => {
+                this.setState({addProductLoading:false});
+                for (let i = 0; i < errors.response.data.length; i++) {
+                    this.setErrorMessage(errors.response.data[i].param, errors.response.data[i].msg)
+                }
+                console.log(errors);
+            })
         })
     }
 
@@ -163,7 +168,7 @@ class AddProductModal extends Component {
                         <Button negative onClick={this.closeModalAddProduct}>
                             Cancel
                         </Button>
-                        <Button onClick={this.handleFormSubmit} positive>
+                        <Button onClick={this.handleFormSubmit} loading={this.state.addProductLoading} positive>
                             Add Product
                         </Button>
                     </Modal.Actions>
