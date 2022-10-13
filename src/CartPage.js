@@ -4,7 +4,16 @@ import NumberInput from 'semantic-ui-react-numberinput';
 import { Link } from 'react-router-dom';
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { uncheckAllProduct, checkAllProduct, uncheckProduct, checkProduct, editPurchaseQuantity } from "./reducers/CartSlice.js"
+import { uncheckAllProduct, checkAllProduct, uncheckProduct, checkProduct, editPurchaseQuantity } from "./reducers/CartSlice.js";
+import axios from 'axios';
+import qs from 'qs';
+import { addProducts, addProduct } from "./reducers/CartSlice.js"
+
+const BASE_URL = "http://localhost:9000";
+const axiosInstance = axios.create({
+    baseURL: BASE_URL,
+})
+
 //Penjelasan pembagian height setiap container pake persen:
 //https://stackoverflow.com/questions/14262938/child-with-max-height-100-overflows-parent
 
@@ -16,8 +25,34 @@ const CartPage = (props) => {
     const [isCheckedAll, setIsCheckedAll] = useState(false);
     const [totalPrice, setTotalPrice] = useState(0);
     const cartStore = useSelector((state) => state.cart.value);
+    const session = useSelector((state) => state.session)
     const dispatch = useDispatch();
 
+    useEffect(() => {
+        axiosInstance.get(`/carts?userId=${session.userId}`).then(response => {
+            //TODO: konversikan format dari db ke format ygbenar (ada picture, harga ,nama nya)
+            JSON.parse(response.data.items).forEach(item => {
+                axiosInstance.get(`/products/${item.productId}`).then(response => {
+                    dispatch(addProduct({
+                        product: {
+                            id: item.productId,
+                            image: BASE_URL + '/product/picture/' + item.productId,
+                            name: response.data.name,
+                            price: response.data.price,
+                            quantity: item.qty,
+                            unit: response.data.unit,
+                            checked: JSON.parse(item.checked.toLowerCase()),
+                        }
+                    }))
+                }).catch(err => {
+                    console.log(err)
+                })
+            })
+            //dispatch(addProducts({products: JSON.parse(response.data.items)}));
+        }).catch(err => {
+            console.log(err);
+        })
+    }, [])
     //ketika ada produk yang di check atau uncheck, perbarui total harga nya
     useEffect(() => {
         let sumPrice = 0;
@@ -28,6 +63,19 @@ const CartPage = (props) => {
         }
         setTotalPrice(sumPrice);
         //PUT ke API => perbarui database nya
+        let items = [];
+        for (let i = 0; i < cartStore.length; i++) {
+            items.push({
+                productId: cartStore[i].id,
+                qty: cartStore[i].quantity,
+                checked: cartStore[i].checked
+            })
+        }
+        axiosInstance.put(`/carts/${session.userId}`, qs.stringify({
+            "items": items
+        }), {
+            headers: { 'content-type': 'application/x-www-form-urlencoded' }
+        })
     }, [cartStore])
 
     const changePurchasedProductQuantity = (selectedId, newQuantity) => {
@@ -120,10 +168,10 @@ const CartPage = (props) => {
                 </Grid.Row>
                 <Grid.Row style={{ height: "10%", padding: "0px" }} columns={1}>
                     <Grid.Column width={7} floated='right' textAlign='right'>
-                        <Link to='/checkout' state={cartStore.filter((cartItem)=>cartItem.checked)}>
+                        <Link to='/checkout' state={cartStore.filter((cartItem) => cartItem.checked)}>
                             <Button size='big' color='green'>Checkout</Button>
                         </Link>
-                        <Link to='/productlist'>
+                        <Link to='/products'>
                             <Button size='big'>Back to Product List</Button>
                         </Link>
                     </Grid.Column>

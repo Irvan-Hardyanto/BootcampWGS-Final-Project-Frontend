@@ -23,7 +23,7 @@ const ProductListPage = (props) => {
 
     //panggil API nya cukup sekali saja di awal..
     useEffect(() => {
-        axiosInstance.get('/customer/productlist').then(response => {
+        axiosInstance.get('/products').then(response => {
             dispatch(initProducts({ products: response.data }))
         }).catch(error => {
             console.log(error);

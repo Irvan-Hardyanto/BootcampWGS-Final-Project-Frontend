@@ -1,6 +1,5 @@
 import React from 'react';
 import { Container, Grid, Header, Message, Image } from 'semantic-ui-react';
-import { QRCodeSVG } from 'qrcode.react';
 
 function PaymentPage(props) {
     return (

@@ -21,11 +21,13 @@ import { Provider} from "react-redux";
 import { configureStore } from '@reduxjs/toolkit';
 import productReducer from './reducers/ProductSlice.js';
 import cartReducer from './reducers/CartSlice';
+import sessionReducer from './reducers/SessionSlice';
 
 const store = configureStore({
     reducer: {
         products: productReducer,
-        cart: cartReducer
+        cart: cartReducer,
+        session: sessionReducer
     }
 })
 
@@ -103,7 +105,7 @@ const router = createBrowserRouter([
         path: "/login",
         element: <LoginPage></LoginPage>
     }, {
-        path: "/productlist",//ini HANYA bisa diakses oleh user dengan role customer yang SUDAH LOGIN
+        path: "/products",//ini HANYA bisa diakses oleh user dengan role customer yang SUDAH LOGIN
         element: <ProductListPage></ProductListPage>
     }, {
         path: "/modal",

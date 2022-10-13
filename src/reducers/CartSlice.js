@@ -19,6 +19,9 @@ export const cartSlice=createSlice({
     name:'cartReducer',
     initialState,
     reducers:{
+        addProducts: (state,action)=>{
+            state.value=[...(state.value),...(action.payload.products)];
+        },
         addProduct: (state,action)=>{
             state.value.push(action.payload.product);
         },
@@ -48,5 +51,5 @@ export const cartSlice=createSlice({
         }
     }
 })
-export const {addProduct,removeProduct,checkAllProduct,uncheckAllProduct,checkProduct,uncheckProduct,editPurchaseQuantity} = cartSlice.actions;
+export const {addProducts,addProduct,removeProduct,checkAllProduct,uncheckAllProduct,checkProduct,uncheckProduct,editPurchaseQuantity} = cartSlice.actions;
 export default cartSlice.reducer;

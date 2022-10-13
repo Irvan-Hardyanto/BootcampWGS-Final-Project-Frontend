@@ -3,6 +3,8 @@ import { Button, Form } from 'semantic-ui-react';
 import axios from 'axios';
 import qs from 'qs';
 import { Navigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { login } from './reducers/SessionSlice';
 
 
 //pengennya pake .env, tapi undefined terus.
@@ -14,8 +16,11 @@ const LoginForm = (props) => {
     const [usernameError, setUsernameError] = useState(false);
     const [passwordError, setPasswordError] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [isLogin, setIsLogin] = useState(false);
-    const [userData, setUserData] = useState(null);
+    // const [isLogin, setIsLogin] = useState(false);
+    // const [userData, setUserData] = useState(null);
+    const dispatch = useDispatch();
+    //sebenarnya ini pakenya JWT 
+    const session = useSelector(state=>state.session);
 
     // constructor(props) {
     //     super(props);
@@ -62,24 +67,24 @@ const LoginForm = (props) => {
     const handleFormSubmit = (event) => {
         event.preventDefault();
         setLoading(true);
-        //pengaman aja biar gak kacau sessionnya
-        if(!isLogin){
+        if (!session.id) {
             const axiosInstance = axios.create({
                 baseURL: BASE_URL,
             })
-    
+
             axiosInstance.post('/login', qs.stringify({
                 userName: username,
                 password: password,
             }), {
                 headers: { 'content-type': 'application/x-www-form-urlencoded' }
             }).then(response => {
-                //ini harus dipastiin apakah udah pas atau belum
-                // this.setState({ isLoggedIn: true, userData: response, loading: false })
                 setLoading(false);
-                setIsLogin(true);
-                setUserData(response.data);
-                // dispatch(login({userData: response.data}))
+                dispatch(login({
+                    userId: response.data.id,
+                    role: response.data.role,
+                    accessToken: response.data.accessToken,
+                    refreshToken: response.data.refreshToken
+                }))
             }).catch(errors => {
                 setLoading(false);
                 //tampilkan pesan error
@@ -88,41 +93,18 @@ const LoginForm = (props) => {
                 }
             })
         }
-
-        // this.setState({ loading: true }, () => {
-        //     const axiosInstance = axios.create({
-        //         baseURL: BASE_URL,
-        //     })
-
-        //     //axios itu by default nge-encode data yg dikirim ke API dalam format JSON
-        //     axiosInstance.post('/login', qs.stringify({
-        //         userName: this.state.userName,
-        //         password: this.state.password,
-        //     }), {
-        //         headers: { 'content-type': 'application/x-www-form-urlencoded' }
-        //     }).then(response => {
-        //         //ini harus dipastiin apakah udah pas atau belum
-        //         this.setState({ isLoggedIn: true, userData: response, loading: false })
-        //     }).catch(errors => {
-        //         this.setState({ loading: false })
-        //         //tampilkan pesan error
-        //         for (let i = 0; i < errors.response.data.length; i++) {
-        //             this.setErrorMessage(errors.response.data[i].param, errors.response.data[i].msg);
-        //         }
-        //     })
-        // })
     }
 
     //referensi: https://github.com/remix-run/react-router/blob/f59ee5488bc343cf3c957b7e0cc395ef5eb572d2/docs/advanced-guides/migrating-5-to-6.md#use-navigate-instead-of-history
     //referensi lainnya: https://learn.co/lessons/react-updating-state
-    if (isLogin) {
-        if (userData.role === 1) {
+    if (session.userId) {
+        if (session.role === 1) {
 
-        } else if (userData.role === 2) {
+        } else if (session.role === 2) {
 
         } else {
             return (
-                <Navigate replace to="/productlist"/>
+                <Navigate replace to="/products" />
             )
         }
     } else {

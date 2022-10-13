@@ -86,7 +86,7 @@ const CheckoutPage = (props) => {
                 <Grid.Row columns={1}>
                     <Grid.Column width={7} floated='right' textAlign='right'>
                         <Button size='big' onClick={openConfirmOrderModal} color='green'>Confirm Order</Button>
-                        <Link to='/productlist'>
+                        <Link to='/products'>
                             <Button size='big'>Back to Product List</Button>
                         </Link>
                     </Grid.Column>
