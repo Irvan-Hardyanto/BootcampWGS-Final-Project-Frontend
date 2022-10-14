@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Grid, Container, Button, Modal, Header, Message, Image, List } from 'semantic-ui-react';
-import { useLocation,Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
 const CheckoutPage = (props) => {
     const [confirmOrderOpen, setConfirmOrderOpen] = useState(false);
@@ -80,7 +80,7 @@ const CheckoutPage = (props) => {
                         <Header as='h1'>TOTAL PRICE</Header>
                     </Grid.Column>
                     <Grid.Column width={4}>
-                        <Header as='h1'>Rp. {order.reduce((a, b) => a + (b['price']*b['quantity'] || 0), 0).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}</Header>
+                        <Header as='h1'>Rp. {order.reduce((a, b) => a + (b['price'] * b['quantity'] || 0), 0).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}</Header>
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row columns={1}>
@@ -100,13 +100,15 @@ const CheckoutPage = (props) => {
                     </Message>
                 </Modal.Content>
                 <Modal.Actions>
-                {/* redirect ke halaman pembayaran */}
+                    {/* redirect ke halaman pembayaran */}
                     <Button negative onClick={closeConfirmOrderModal}>
                         No
                     </Button>
-                    <Button positive onClick={closeConfirmOrderModal}>
-                        Yes
-                    </Button>
+                    <Link to='/payment' state={order}>
+                        <Button positive onClick={closeConfirmOrderModal}>
+                            Yes
+                        </Button>
+                    </Link>
                 </Modal.Actions>
             </Modal>
         </Container>

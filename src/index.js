@@ -126,7 +126,7 @@ const router = createBrowserRouter([
         path: "/cart",
         element: <CartPage products={generateDummyProductData(10)}></CartPage>
     }, {
-        path: "/pay",
+        path: "/payment",
         element: <PaymentPage></PaymentPage>
     }
 ]);
