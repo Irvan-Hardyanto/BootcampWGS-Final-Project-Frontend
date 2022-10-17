@@ -1,43 +1,48 @@
 import React, { useState } from 'react';
 import { Grid, Container, Button, Modal, Header, Message, Image, List } from 'semantic-ui-react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, Navigate } from 'react-router-dom';
 
 const CheckoutPage = (props) => {
     const [confirmOrderOpen, setConfirmOrderOpen] = useState(false);
-    const order = useLocation().state;
-    //ini komponen yang kompleks...
-    //dia harus nampilin semua belanjaan punya customer
-    //customer bisa milih mau ngebatalin produk mana
-    //atau ngubah jumlah pembeliannya
+    const [checkoutDone, setCheckoutDone] = useState(false);
 
-    // constructor(props) {
-    //     super(props);
+    //data redirect dari halaman product detail modal (kalau beli langsung)
+    //atau dari cart (kalo beli dari cart)
+    const order = useLocation().state.products;
+    const prevPage = useLocation().state.prevPage;
 
-    //     //state itu berupa sebuah order (daftar produk-produk yang dibeli oleh customer)
-    //     this.state = {
-    //         order: props.order,//array of product objects
-    //         confirmOrderOpen: false,
-    //         confirmOrderOpenDimmer: undefined,
-    //     }
-    //     this.closeConfirmOrderModal = this.closeConfirmOrderModal.bind(this);
-    //     this.openConfirmOrderModal = this.openConfirmOrderModal.bind(this);
-    // }
     const openConfirmOrderModal = () => {
         setConfirmOrderOpen(true)
-        // setState({
-        //     confirmOrderOpen: true,
-        //     confirmOrderOpenDimmer: 'blurring'
-        // })
     }
 
     const closeConfirmOrderModal = () => {
         setConfirmOrderOpen(false)
-        // this.setState({
-        //     confirmOrderOpen: false,
-        //     confirmOrderOpenDimmer: undefined
-        // })
+        checkout();
+    }
+    const checkout = () => {
+        //kirim data transaksi ke tabel Payment
+        //ketika user klik checkout, ada rekord di tabel transaksi yang statusnya 'unpaid';
+        setCheckoutDone(true);
+    }
+    const renderReturnButton = (prevPage) => {
+        if (prevPage === "product_detail_modal") {
+            return (
+                <Link to='/products'>
+                    <Button size='big'>Back to Product List</Button>
+                </Link>
+            )
+        } else if (prevPage === "cart") {
+            return(
+                <Link to='/cart'>
+                    <Button size='big'>Back to Shopping Cart</Button>
+                </Link>
+            )
+        }
     }
 
+    if (checkoutDone) {
+        return <Navigate to='/payment' state={order}></Navigate>
+    }
     return (
         <Container style={{ backgroundColor: "white", padding: "2em", height: "100%", overflow: 'Auto' }}>
             <Header as='h1'>CHECKOUT</Header>
@@ -86,9 +91,7 @@ const CheckoutPage = (props) => {
                 <Grid.Row columns={1}>
                     <Grid.Column width={7} floated='right' textAlign='right'>
                         <Button size='big' onClick={openConfirmOrderModal} color='green'>Confirm Order</Button>
-                        <Link to='/products'>
-                            <Button size='big'>Back to Product List</Button>
-                        </Link>
+                        {renderReturnButton(prevPage)}
                     </Grid.Column>
                 </Grid.Row>
             </Grid>
@@ -104,11 +107,9 @@ const CheckoutPage = (props) => {
                     <Button negative onClick={closeConfirmOrderModal}>
                         No
                     </Button>
-                    <Link to='/payment' state={order}>
-                        <Button positive onClick={closeConfirmOrderModal}>
-                            Yes
-                        </Button>
-                    </Link>
+                    <Button positive onClick={closeConfirmOrderModal}>
+                        Yes
+                    </Button>
                 </Modal.Actions>
             </Modal>
         </Container>

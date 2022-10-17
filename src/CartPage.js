@@ -168,7 +168,12 @@ const CartPage = (props) => {
                 </Grid.Row>
                 <Grid.Row style={{ height: "10%", padding: "0px" }} columns={1}>
                     <Grid.Column width={7} floated='right' textAlign='right'>
-                        <Link to='/checkout' state={cartStore.filter((cartItem) => cartItem.checked)}>
+                        <Link to='/checkout' state={
+                            {
+                                products: cartStore.filter((cartItem) => cartItem.checked),
+                                prevPage: 'cart'
+                            }
+                        }>
                             <Button size='big' color='green'>Checkout</Button>
                         </Link>
                         <Link to='/products'>

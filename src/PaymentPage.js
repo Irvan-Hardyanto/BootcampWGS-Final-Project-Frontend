@@ -1,32 +1,94 @@
-import React from 'react';
-import { Container, Grid, Header, Message, Image, List } from 'semantic-ui-react';
+import React, { useState} from "react";
+import { Container, Grid, Header, Message, Image, List, Button } from 'semantic-ui-react';
 import { useLocation } from 'react-router-dom';
+import { FileUploader } from "react-drag-drop-files";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import qs from "qs";
 
+const BASE_URL = "http://localhost:9000";
+const MAX_IMAGE_SIZE = 1;//dalam satuan MB
+const axiosInstance = axios.create({
+    baseURL: BASE_URL,
+})
 
 ///checkout sama payment sebenernya bisa ngambil dari 'store' nya cart
 function PaymentPage(props) {
-    const order = useSelector((state) => state.cart.value).filter(e => e.checked);
-    let totalPrice=0;
-    for(let item of order){
-        totalPrice += (item.quantity*item.price);
+    const session = useSelector((state) => state.session)
+    const [loading,setLoading]=useState(false);
+    const order = useLocation().state;
+    // console.log(order);
+    let totalPrice = 0;
+    order.forEach((product)=>{
+        totalPrice +=product.quantity*product.price;
+    })
+
+    const fileTypes = ["JPG", "PNG"];
+    const [paymentConfirmation, setPaymentConfirmation] = useState(null);
+    
+    const extractItemsFromOrder= (order)=>{
+        let items = [];
+        for(let i =0;i < order.length;i++){
+            items.push({
+                productId:order[i].id,
+                qty:order[i].quantity,
+                subtotal:order[i].quantity*order[i].price
+            })
+        }
+        return items;
+    }
+    const handleChange = (file) => {
+      setPaymentConfirmation(file);
+    };
+
+    const handleTypeError = (event)=>{
+        alert('Invalid file format! Accepted formats are: '+fileTypes);
+    }
+
+    const handleSizeError = (event)=>{
+        alert(`Picture size too large! maximum image size is ${MAX_IMAGE_SIZE} MB!`);
+    }
+    const handleSubmit = (event)=>{
+        if(!paymentConfirmation){
+            //tampilkan pesan error
+            alert('Please upload payment confirmation image!')
+        }else if(order.length===0){
+            alert('No items to pay!')
+        }else{
+            setLoading(true);
+            const formData = new FormData();
+            formData.append("userId",session.userId);
+            formData.append("items",JSON.stringify(extractItemsFromOrder(order)));
+            formData.append("nominal",totalPrice);
+            formData.append("paymentConfirmation",paymentConfirmation);
+
+            axiosInstance.post('/payments',formData, {
+                headers: { 'content-type': 'multipart/form-data; boundary=-----rick' }
+            }).then(response=>{
+                setLoading(false);
+                //kasih konfirmasi kalau pembayaran berhasil.
+            }).catch(err=>{
+                setLoading(false);
+                console.log(err);
+            })
+        }
     }
     return (
         <Container style={{ backgroundColor: "white", height: "100%" }}>
             <Grid padded style={{ height: "100%" }}>
-                <Grid.Row style={{ height: "25%" }}>
+                <Grid.Row style={{ height: "20%", padding: "0px" }}>
                     <Grid.Column>
-                        <Header as="h1">PAYMENT</Header>
+                        <Header as="h1" style={{ marginTop: "0.3em" }}>PAYMENT</Header>
                         <Message info>
                             <Message.Header>One Last Step!</Message.Header>
                             Please scan QR code below for payment,
                         </Message>
                     </Grid.Column>
                 </Grid.Row>
-                <Grid.Row centered style={{ height: "50%" }}>
+                <Grid.Row centered style={{ height: "60%" }}>
                     <Grid.Column verticalAlign='middle' width={10} textAlign='center'>
                         <Header as='h1'>ORDER DETAILS</Header>
-                        <List divided>
+                        <List style={{ maxHeight: "15em", overflowY: "auto", overflowX: "hidden" }} divided>
                             {order.map((product, idx) => {
                                 return (
                                     <List.Item key={product.id}>
@@ -35,7 +97,7 @@ function PaymentPage(props) {
                                                 <Grid.Row>
                                                     <Grid.Column textAlign='left' width={10}>
                                                         <Header size='medium'>{product.name}</Header>
-                                                        <Header sub style={{fontSize: "0.9em"}}>{`${product.quantity} ${product.unit}`}</Header>
+                                                        <Header sub style={{ fontSize: "0.9em" }}>{`${product.quantity}  \u00A0 ${product.unit}`}</Header>
                                                     </Grid.Column>
                                                     <Grid.Column width={6} textAlign='right'>
                                                         <Header as='h2'>{`Rp. ${(parseInt(product.quantity) * parseInt(product.price)).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Header>
@@ -47,37 +109,46 @@ function PaymentPage(props) {
                                 )
                             })}
                         </List>
-                        <Message>    
-                        <Grid>
-                            <Grid.Row>
-                                <Grid.Column width={10} textAlign='left'>
-                                    <Header size='large'>TOTAL PRICE</Header>
+                        <Message>
+                            <Grid>
+                                <Grid.Row>
+                                    <Grid.Column width={10} textAlign='left'>
+                                        <Header size='large'>TOTAL PRICE</Header>
+                                    </Grid.Column>
+                                    <Grid.Column width={6} textAlign='right'>
+                                        <Header size='large'>{`Rp.  ${totalPrice.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Header>
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
+                        </Message>
+                    </Grid.Column>
+                    <Grid.Column textAlign='center' width={5} style={{ margin: "auto", height: '100%' }}>
+                        <Grid style={{ height: '100%' }}>
+                            <Grid.Row style={{ height: '80%' }}>
+                                <Grid.Column style={{ maxHeight: '100%' }}>
+                                    <Container style={{ maxHeight: '100%' }}>
+                                        <Image size="medium" src={"../images/qr.jpg"}></Image>
+                                    </Container>
                                 </Grid.Column>
-                                <Grid.Column width={6} textAlign='right'>
-                                    <Header size='large'>{`Rp.  ${totalPrice.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Header>
+                            </Grid.Row>
+                            <Grid.Row style={{ height: '20%' }}>
+                                <Grid.Column textAlign='center'>
+                                    <FileUploader onTypeError={handleTypeError} onSizeError={handleSizeError} label="Upload your payment confirmation here" handleChange={handleChange} name="paymentConfirmation" maxSize={MAX_IMAGE_SIZE} types={fileTypes} />
+                                    <br/>
+                                    <Button onClick={handleSubmit} color='blue' loading={loading}>Confirm Payment</Button>
                                 </Grid.Column>
                             </Grid.Row>
                         </Grid>
-                        </Message>
-                    </Grid.Column>
-                    <Grid.Column textAlign='center' width={5} style={{ margin: "auto" }}>
-                        <Image fluid src={"../images/qr.jpg"}></Image>
                     </Grid.Column>
                 </Grid.Row>
-                <Grid.Row style={{ height: "25%" }}>
+                <Grid.Row style={{ height: "20%" }}>
                     <Grid.Column textAlign='center'>
                         <Header size='medium'>Available Payment Methods</Header>
                         <Grid>
-                            <Grid.Row centered columns={1} padded>
+                            <Grid.Row centered columns={1} style={{ padding: "0px" }}>
                                 <Grid.Column verticalAlign='middle' width={3} textAlign='center'>
                                     <Image fluid src="../images/gopay.png" />
                                 </Grid.Column>
-                                {/* <Grid.Column verticalAlign='middle' width={3} textAlign='center'>
-                                    <Image fluid src="../images/ovo.png"/>
-                                </Grid.Column>
-                                <Grid.Column verticalAlign='middle' width={3} textAlign='center'>
-                                    <Image centered src="../images/dana.png" size="tiny"/>
-                                </Grid.Column> */}
                             </Grid.Row>
                         </Grid>
                     </Grid.Column>

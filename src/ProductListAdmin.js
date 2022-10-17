@@ -3,8 +3,10 @@ import CustomHeader from './CustomHeader';
 import { List, Container, Grid, Header, Image, Button } from 'semantic-ui-react';
 import axios from 'axios';
 import AddProductModal from './AddProductModal';
+import * as format from 'date-format';
 
 const BASE_URL = "http://localhost:9000";
+const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
 
 class ProductListAdmin extends React.Component {
     constructor(props) {
@@ -18,7 +20,7 @@ class ProductListAdmin extends React.Component {
             baseURL: BASE_URL,
         })
 
-        axiosInstance.get('/customer/productlist').then(response=>{
+        axiosInstance.get('/products').then(response=>{
             // console.log(response);
             this.setState({products: response.data});
         }).catch(error=>{
@@ -73,6 +75,7 @@ class ProductListAdmin extends React.Component {
                                                         <Grid.Column width={10}>
                                                             <List.Content>
                                                                 <table>
+                                                                <tbody>
                                                                     <tr>
                                                                         <td><strong>Product name</strong></td>
                                                                         <td>:</td>
@@ -91,13 +94,14 @@ class ProductListAdmin extends React.Component {
                                                                     <tr>
                                                                         <td><strong>Added at</strong></td>
                                                                         <td>:</td>
-                                                                        <td>{product.createdAt}</td>
+                                                                        <td>{format.asString(DATE_FORMAT, new Date(product.createdAt))}</td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td><strong>Last updated at</strong></td>
                                                                         <td>:</td>
-                                                                        <td>{product.updatedAt}</td>
+                                                                        <td>{format.asString(DATE_FORMAT, new Date(product.updatedAt))}</td>
                                                                     </tr>
+                                                                </tbody>
                                                                 </table>
                                                             </List.Content>
                                                         </Grid.Column>

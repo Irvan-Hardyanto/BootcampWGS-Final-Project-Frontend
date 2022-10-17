@@ -97,16 +97,21 @@ const ProductDetailModal = (props) => {
                 </Modal.Content>
                 <Modal.Actions>
                     <Button.Group>
-                        <Link to='/checkout' state={[
-                            {
-                                id: props.id,
-                                image: props.imgSrc,
-                                name: props.productName,
-                                price: props.productPrice,
-                                quantity: parseInt(quantity),
-                                unit: props.unit
-                            }
-                        ]}>
+                        <Link to='/checkout' state={{//awalnya state nya itu array doang.
+                            products: [
+                                {
+                                    id: props.id,
+                                    image: props.imgSrc,
+                                    name: props.productName,
+                                    price: props.productPrice,
+                                    quantity: parseInt(quantity),
+                                    unit: props.unit
+                                }
+                            ],
+                            prevPage: 'product_detail_modal'
+                        }
+
+                        }>
                             <Button color='green' icon labelPosition='left' onClick={closeModal}>
                                 <Icon name='money bill alternate outline' />
                                 Buy!

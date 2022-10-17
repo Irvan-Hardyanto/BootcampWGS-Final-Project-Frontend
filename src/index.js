@@ -12,6 +12,7 @@ import SellingListPage from './SellingListPage';
 import ProductListAdmin from './ProductListAdmin';
 import CartPage from './CartPage';
 import PaymentPage from './PaymentPage';
+import AdminDashboard from './AdminDashboard';
 import { faker } from '@faker-js/faker';
 import {
     createBrowserRouter,
@@ -91,6 +92,19 @@ const generateDummySellingData = (num) => {
     return sellingData;
 }
 
+const generateDummyCartData = (num)=>{
+    let cartData = [];
+    for (let i = 1; i <= num; i++) {
+        cartData.push({
+            name: faker.commerce.productName(),
+            quantity: getRndInteger(1, 100),
+            unit:  'pieces',
+            price: getRndInteger(10000,20000)
+        })
+    }
+    return cartData;
+}
+
 //client-side routing menggunakan react router
 const router = createBrowserRouter([
     {
@@ -120,14 +134,18 @@ const router = createBrowserRouter([
         path: "/product/list",
         element: <SellingListPage sellingList={generateDummySellingData(12)}></SellingListPage>
     }, {
-        path: "/admin/product/list",
+        path: "/admin/products",
         element: <ProductListAdmin products={generateDummyProductData(10)}></ProductListAdmin>
     }, {
         path: "/cart",
         element: <CartPage products={generateDummyProductData(10)}></CartPage>
     }, {
         path: "/payment",
+        // element: <PaymentPage order={generateDummyCartData(10)}></PaymentPage>
         element: <PaymentPage></PaymentPage>
+    },{
+        path: "/admin/dashboard",
+        element: <AdminDashboard></AdminDashboard>
     }
 ]);
 root.render(
