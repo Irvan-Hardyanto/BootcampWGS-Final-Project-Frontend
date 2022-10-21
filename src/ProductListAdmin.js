@@ -8,6 +8,10 @@ import * as format from 'date-format';
 const BASE_URL = "http://localhost:9000";
 const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
 
+const axiosInstance = axios.create({
+    baseURL: BASE_URL,
+})
+
 class ProductListAdmin extends React.Component {
     constructor(props) {
         super(props);
@@ -16,9 +20,6 @@ class ProductListAdmin extends React.Component {
             modalEditProductOpen: false,
             modalDeleteProductOpen: false
         }
-        const axiosInstance = axios.create({
-            baseURL: BASE_URL,
-        })
 
         axiosInstance.get('/products').then(response=>{
             // console.log(response);

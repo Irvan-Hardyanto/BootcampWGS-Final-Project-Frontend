@@ -12,7 +12,7 @@ import SellingListPage from './SellingListPage';
 import ProductListAdmin from './ProductListAdmin';
 import CartPage from './CartPage';
 import PaymentPage from './PaymentPage';
-import AdminDashboard from './AdminDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import { faker } from '@faker-js/faker';
 import {
     createBrowserRouter,
@@ -128,10 +128,10 @@ const router = createBrowserRouter([
         path: "/checkout",
         element: <CheckoutPage></CheckoutPage>
     }, {
-        path: "/customer/list",
+        path: "/super-admin/users",
         element: <CustomerListPage customers={generateDummyCustomerData(10)}></CustomerListPage>
     }, {
-        path: "/product/list",
+        path: "/admin/selling-list",
         element: <SellingListPage sellingList={generateDummySellingData(12)}></SellingListPage>
     }, {
         path: "/admin/products",

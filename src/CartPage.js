@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { List, Container, Grid, Header, Image, Search, Checkbox, Segment, Button } from 'semantic-ui-react';
+import { List, Container, Grid, Header, Image, Search, Checkbox, Segment, Button, Icon } from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
 import { Link } from 'react-router-dom';
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { uncheckAllProduct, checkAllProduct, uncheckProduct, checkProduct, editPurchaseQuantity } from "./reducers/CartSlice.js";
+import { uncheckAllProduct, checkAllProduct, uncheckProduct, checkProduct, editPurchaseQuantity, removeProduct } from "./reducers/CartSlice.js";
 import axios from 'axios';
 import qs from 'qs';
 import { addProducts, addProduct } from "./reducers/CartSlice.js"
@@ -28,33 +28,10 @@ const CartPage = (props) => {
     const session = useSelector((state) => state.session)
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        axiosInstance.get(`/carts?userId=${session.userId}`).then(response => {
-            //TODO: konversikan format dari db ke format ygbenar (ada picture, harga ,nama nya)
-            JSON.parse(response.data.items).forEach(item => {
-                axiosInstance.get(`/products/${item.productId}`).then(response => {
-                    dispatch(addProduct({
-                        product: {
-                            id: item.productId,
-                            image: BASE_URL + '/product/picture/' + item.productId,
-                            name: response.data.name,
-                            price: response.data.price,
-                            quantity: item.qty,
-                            unit: response.data.unit,
-                            checked: JSON.parse(item.checked.toLowerCase()),
-                        }
-                    }))
-                }).catch(err => {
-                    console.log(err)
-                })
-            })
-            //dispatch(addProducts({products: JSON.parse(response.data.items)}));
-        }).catch(err => {
-            console.log(err);
-        })
-    }, [])
     //ketika ada produk yang di check atau uncheck, perbarui total harga nya
     useEffect(() => {
+        console.log('cartis modifiedon cartPage!')
+        console.log('items in cart are')
         let sumPrice = 0;
         for (let product of cartStore) {
             if (product.checked) {
@@ -71,15 +48,18 @@ const CartPage = (props) => {
                 checked: cartStore[i].checked
             })
         }
+        console.log(items);
         axiosInstance.put(`/carts/${session.userId}`, qs.stringify({
             "items": items
         }), {
             headers: { 'content-type': 'application/x-www-form-urlencoded' }
+        }).catch(err => {
+            console.log(err);
         })
     }, [cartStore])
 
     const changePurchasedProductQuantity = (selectedId, newQuantity) => {
-        dispatch(editPurchaseQuantity({ id: selectedId, quantity: newQuantity }))
+        dispatch(editPurchaseQuantity({ id: selectedId, quantity: parseInt(newQuantity) }))
     }
 
     const handleMainCheckBoxClicked = (event, data) => {
@@ -144,10 +124,15 @@ const CartPage = (props) => {
                                                             <NumberInput className="numberInput" value={product.quantity.toString()} onChange={(e) => changePurchasedProductQuantity(product.id, e)} />
                                                         </List.Content>
                                                     </Grid.Column>
-                                                    <Grid.Column width={7}>
+                                                    <Grid.Column width={5}>
                                                         <List.Content verticalAlign='middle' style={{ height: "100%" }}>
                                                             <Header as='h1' textAlign="right">Rp. {(product.price * product.quantity).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}</Header>
                                                         </List.Content>
+                                                    </Grid.Column>
+                                                    <Grid.Column width={2}>
+                                                        <Button color='red' icon onClick={(e)=>dispatch(removeProduct({id: parseInt(product.id)}))}>
+                                                            <Icon name='trash alternate' />
+                                                        </Button>
                                                     </Grid.Column>
                                                 </Grid.Row>
                                             </Grid>

@@ -23,7 +23,14 @@ export const cartSlice=createSlice({
             state.value=[...(state.value),...(action.payload.products)];
         },
         addProduct: (state,action)=>{
-            state.value.push(action.payload.product);
+            const find = state.value.find(cartItem=>{
+                return cartItem.id === parseInt(action.payload.product.id);
+            });
+            if(!find){
+                state.value.push(action.payload.product);
+            }else{
+                state.value.find((product)=>product.id===action.payload.product.id).quantity+=action.payload.product.quantity;
+            }
         },
         checkAllProduct: (state,action)=>{
             for(let product of state.value){
@@ -46,7 +53,7 @@ export const cartSlice=createSlice({
         },
         removeProduct: (state,action)=>{
             state.value=state.value.filter((product)=>{
-                return !product.id===action.payload.id
+                return !(product.id===action.payload.id)
             })
         }
     }

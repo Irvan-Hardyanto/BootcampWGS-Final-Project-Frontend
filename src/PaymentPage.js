@@ -18,21 +18,28 @@ function PaymentPage(props) {
     const [loading,setLoading]=useState(false);
     const order = useLocation().state;
     // console.log(order);
-    let totalPrice = 0;
-    order.forEach((product)=>{
-        totalPrice +=product.quantity*product.price;
-    })
+    const countTotalPrice=(order)=>{
+        let totalPrice = 0;
+        order.forEach((product)=>{
+            totalPrice +=product.quantity*product.price;
+        })
+        return totalPrice;
+    }
 
     const fileTypes = ["JPG", "PNG"];
     const [paymentConfirmation, setPaymentConfirmation] = useState(null);
     
-    const extractItemsFromOrder= (order)=>{
+    const formatOrder= (order)=>{
         let items = [];
         for(let i =0;i < order.length;i++){
             items.push({
-                productId:order[i].id,
-                qty:order[i].quantity,
-                subtotal:order[i].quantity*order[i].price
+                userId: session.userId,//denormalisasi, buat cari tau user beli apa aja (supaya gak perlu join).
+                productId:order[i].id,//denormalisasi juga
+                productName:order[i].name,//denormalisasi juga
+                productPrice:order[i].price,//denormalisasi juga
+                unit: order[i].unit,//denormalisasi juga
+                qty:order[i].quantity,//denormalisasi juga
+                totalPrice:order[i].quantity*order[i].price
             })
         }
         return items;
@@ -58,9 +65,10 @@ function PaymentPage(props) {
             setLoading(true);
             const formData = new FormData();
             formData.append("userId",session.userId);
-            formData.append("items",JSON.stringify(extractItemsFromOrder(order)));
-            formData.append("nominal",totalPrice);
+            formData.append("items",JSON.stringify(formatOrder(order)));
+            formData.append("nominal",countTotalPrice(order));
             formData.append("paymentConfirmation",paymentConfirmation);
+            console.log('appending form data done!');
 
             axiosInstance.post('/payments',formData, {
                 headers: { 'content-type': 'multipart/form-data; boundary=-----rick' }
@@ -116,7 +124,7 @@ function PaymentPage(props) {
                                         <Header size='large'>TOTAL PRICE</Header>
                                     </Grid.Column>
                                     <Grid.Column width={6} textAlign='right'>
-                                        <Header size='large'>{`Rp.  ${totalPrice.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Header>
+                                        <Header size='large'>{`Rp.  ${countTotalPrice(order).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Header>
                                     </Grid.Column>
                                 </Grid.Row>
                             </Grid>

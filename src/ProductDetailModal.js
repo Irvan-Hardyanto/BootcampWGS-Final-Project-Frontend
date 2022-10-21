@@ -1,25 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Modal, Image, Grid, Message, Header, Icon } from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addProduct } from "./reducers/CartSlice.js"
+import { addProduct } from "./reducers/CartSlice.js";
 
 const ProductDetailModal = (props) => {
     const [open, setOpen] = useState(false);
     const [quantity, setQuantity] = useState('1');
     const dispatch = useDispatch();
-    // constructor(props) {
-    //     super(props);
-    //     this.state = {
-    //         open: false,
-    //         dimmer: undefined,
-    //         quantity: '1',
-    //     }
-    //     this.openModal = this.openModal.bind(this);
-    //     this.closeModal = this.closeModal.bind(this);
-    // }
-
+    
     const changePurchaseQuantity = (newQuantity) => {
         // this.setState({ quantity: newQuantity });
         setQuantity(newQuantity);
@@ -27,25 +17,16 @@ const ProductDetailModal = (props) => {
 
     const openModal = () => {
         setOpen(true);
-        // this.setState({
-        //     open: true
-        // });
-        // this.setState({
-        //     dimmer: 'blurring',
-        // })
     }
 
     //tutup modalnya dan tambahkan ke cart
     const closeModal = () => {
-        // this.setState({
-        //     open: false
-        // })
         dispatch(addProduct({
             product: {
-                id: props.id,
+                id: parseInt(props.id),
                 image: props.imgSrc,
                 name: props.productName,
-                price: props.productPrice,
+                price: parseInt(props.productPrice),
                 quantity: parseInt(quantity),
                 unit: props.unit,
                 checked: false,
