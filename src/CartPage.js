@@ -30,8 +30,8 @@ const CartPage = (props) => {
 
     //ketika ada produk yang di check atau uncheck, perbarui total harga nya
     useEffect(() => {
-        console.log('cartis modifiedon cartPage!')
-        console.log('items in cart are')
+        // console.log('cartis modifiedon cartPage!')
+        // console.log('items in cart are')
         let sumPrice = 0;
         for (let product of cartStore) {
             if (product.checked) {

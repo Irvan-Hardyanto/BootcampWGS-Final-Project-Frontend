@@ -1,6 +1,6 @@
 import React, { useState} from "react";
 import { Container, Grid, Header, Message, Image, List, Button } from 'semantic-ui-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import { FileUploader } from "react-drag-drop-files";
 import { useSelector } from "react-redux";
 import axios from "axios";
@@ -15,6 +15,7 @@ const axiosInstance = axios.create({
 ///checkout sama payment sebenernya bisa ngambil dari 'store' nya cart
 function PaymentPage(props) {
     const session = useSelector((state) => state.session)
+    const [paymentCompleted,setPaymentCompleted]=useState(false);
     const [loading,setLoading]=useState(false);
     const order = useLocation().state;
     // console.log(order);
@@ -64,22 +65,35 @@ function PaymentPage(props) {
         }else{
             setLoading(true);
             const formData = new FormData();
+            console.log('THIS FUCKING HANDLE SUBMIT SHOULD BE SENDING DATA')
+            console.log('userId is: '+session.userId);
+            console.log('items is: '+JSON.stringify(formatOrder(order)));
+            console.log('nominal is: '+countTotalPrice(order));
+            console.log('paymentConfirmation is: '+paymentConfirmation);
+
             formData.append("userId",session.userId);
             formData.append("items",JSON.stringify(formatOrder(order)));
             formData.append("nominal",countTotalPrice(order));
             formData.append("paymentConfirmation",paymentConfirmation);
             console.log('appending form data done!');
-
+            console.log('formData, in JSON format are:'+JSON.stringify(formData));
+            for (const [key, value] of Object.entries(formData)) {
+                console.log(`${key}: ${value}`);
+              }
             axiosInstance.post('/payments',formData, {
                 headers: { 'content-type': 'multipart/form-data; boundary=-----rick' }
             }).then(response=>{
                 setLoading(false);
+                setPaymentCompleted(true);//untuk redirect ke halaman detail produk
                 //kasih konfirmasi kalau pembayaran berhasil.
             }).catch(err=>{
                 setLoading(false);
                 console.log(err);
             })
         }
+    }
+    if(paymentCompleted){
+        return <Navigate to='/products'/>
     }
     return (
         <Container style={{ backgroundColor: "white", height: "100%" }}>

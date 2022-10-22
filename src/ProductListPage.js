@@ -26,8 +26,8 @@ const ProductListPage = (props) => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        console.log('cartis modifiedon productListPage!')
-        console.log('items in cart are')
+        // console.log('cartis modifiedon productListPage!')
+        // console.log('items in cart are')
         let items = [];
         for (let i = 0; i < cartStore.length; i++) {
             items.push({
@@ -36,7 +36,7 @@ const ProductListPage = (props) => {
                 checked: cartStore[i].checked
             })
         }
-        console.log('items in cart when at productlistpage are: '+items)
+        // console.log('items in cart when at productlistpage are: '+items)
         axiosInstance.put(`/carts/${session.userId}`, qs.stringify({
             "items": items
         }), {

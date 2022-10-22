@@ -10,7 +10,7 @@ const CheckoutPage = (props) => {
     //atau dari cart (kalo beli dari cart)
     const order = useLocation().state.products;
     const prevPage = useLocation().state.prevPage;
-    console.log("order is: "+JSON.stringify(order));
+    // console.log("order is: "+JSON.stringify(order));
 
     const openConfirmOrderModal = () => {
         setConfirmOrderOpen(true)

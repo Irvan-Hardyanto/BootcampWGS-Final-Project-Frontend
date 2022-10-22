@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Menu, Header} from 'semantic-ui-react';
+import { Grid, Menu, Header, Label} from 'semantic-ui-react';
 import axios from 'axios';
-import qs from 'qs';
 import PendingTransactions from './PendingTransactions';
 import CompletedTransactions from './CompletedTransactions';
 import ProductList from './ProductList';
 import SellingList from './SellingList';
 
 const BASE_URL = "http://localhost:9000";
-const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
@@ -17,7 +15,7 @@ const axiosInstance = axios.create({
 function AdminDashboard(props) {
     const [pendingTransactions, setPendingTransactions] = useState([]);
     const [completedTransactions, setCompletedTransactions] = useState([]);
-    const [clickedMenu, setClickedMenu] = useState(null);
+    const [clickedMenu, setClickedMenu] = useState('');
 
     //get dari API sekali saja di awal
     //tapi kedepannya harus dipikirin gimana cara nya ketika ada transaksi baru,
@@ -30,10 +28,11 @@ function AdminDashboard(props) {
         })
     }, [])
 
-    const showMainContent = async () => {
+    const showMainContent = () => {
+        console.log('type of clickedMenu is: '+(typeof clickedMenu))
         if (clickedMenu === 'pending_transactions') {
             return <PendingTransactions
-                pendingTransactions={pendingTransactions}
+                pendingTransactions={pendingTransactions} setPendingTransactions={setPendingTransactions}
             />
         }else if(clickedMenu === 'completed_transactions'){
             return(
@@ -43,14 +42,9 @@ function AdminDashboard(props) {
             )
         }else if(clickedMenu === 'products'){
             return <ProductList/>;
-        }else if(clickedMenu.contains("sellinglist")){
-            const response = await axiosInstance.get('/sellings');
-            if(response.status==200){
-                if(clickedMenu ==="sellinglist/all"){
-                    return <SellingList></SellingList>
-                }
-            }else{
-                console.log(response);
+        }else if(clickedMenu.includes("sellinglist")){
+            if(clickedMenu==='sellinglist/all'){
+                return <SellingList groupby='none'></SellingList>
             }
         }
     }
@@ -75,11 +69,11 @@ function AdminDashboard(props) {
                             <Menu.Header>Selling List</Menu.Header>
                             <Menu.Menu>
                                 <Menu.Item name="Show All" onClick={()=>setClickedMenu('sellinglist/all')}/>
-                                <Menu.Item name="Daily" />
-                                <Menu.Item name="Weekly" />
-                                <Menu.Item name="Monthly" />
-                                <Menu.Item name="By Product"/>
-                                <Menu.Item name="By Customer"></Menu.Item>
+                                <Menu.Item name="Daily (Coming Soon!)" onClick={()=>setClickedMenu('sellinglist/daily')}/>
+                                <Menu.Item name="Weekly (Coming Soon!)" onClick={()=>setClickedMenu('sellinglist/weekly')}/>
+                                <Menu.Item name="Monthly (Coming Soon!)" onClick={()=>setClickedMenu('sellinglist/monthly')}/>
+                                <Menu.Item name="By Product" onClick={()=>setClickedMenu('sellinglist/product')}/>
+                                <Menu.Item name="By Customer" onClick={()=>setClickedMenu('sellinglist/product')}/>
                             </Menu.Menu>
                         </Menu.Item>
                         <Menu.Item>
@@ -104,7 +98,7 @@ function AdminDashboard(props) {
                 <Grid.Column width={13} style={{ paddingLeft: "0px"}}>
                     {/* <Tab panes={panes(paneProps)} /> */}
                     <div style={{backgroundColor: "white",height:"100%"}}>
-                        {showMainContent()}
+                        {showMainContent()/* Ini gak boleh async */}
                     </div>
                 </Grid.Column>
             </Grid.Row>
