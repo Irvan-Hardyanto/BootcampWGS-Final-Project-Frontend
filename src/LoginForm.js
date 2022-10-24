@@ -99,8 +99,13 @@ const LoginForm = (props) => {
     //referensi lainnya: https://learn.co/lessons/react-updating-state
     if (session.userId) {
         if (session.role === 1) {
-
+            return (
+                <Navigate replace to="/super-admin/dashboard"/>
+            )
         } else if (session.role === 2) {
+            return (
+                <Navigate replace to="/admin/dashboard"/>
+            )
 
         } else {
             return (

@@ -2,6 +2,7 @@ import React from 'react';
 import { Table } from 'semantic-ui-react';
 import * as format from 'date-format';
 const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
+import useTable from '../../hooks/useTable';
 
 function CompletedTransactions(props) {
     return (
