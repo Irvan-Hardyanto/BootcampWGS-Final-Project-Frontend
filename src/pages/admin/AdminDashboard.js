@@ -1,51 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Menu, Header, Label} from 'semantic-ui-react';
-import axios from 'axios';
 import PendingTransactions from './PendingTransactions';
 import CompletedTransactions from './CompletedTransactions';
 import ProductList from './ProductList';
 import SellingList from './SellingList';
-
-const BASE_URL = "http://localhost:9000";
-
-const axiosInstance = axios.create({
-    baseURL: BASE_URL,
-})
+import HttpLog from '../HttpLog';
 
 function AdminDashboard(props) {
-    const [pendingTransactions, setPendingTransactions] = useState([]);
-    const [completedTransactions, setCompletedTransactions] = useState([]);
     const [clickedMenu, setClickedMenu] = useState('');
-
-    //get dari API sekali saja di awal
-    //tapi kedepannya harus dipikirin gimana cara nya ketika ada transaksi baru,
-    //ada row baru yang di  insert ke database, 
-    //otomatis nge get ke api => tampilan nya otomatis berubah
-    useEffect(() => {
-        axiosInstance.get('/payments').then(response => {
-            setPendingTransactions(response.data.filter(row => !row.paid));
-            setCompletedTransactions(response.data.filter(row => row.paid));
-        })
-    }, [])
 
     const showMainContent = () => {
         console.log('type of clickedMenu is: '+(typeof clickedMenu))
         if (clickedMenu === 'pending_transactions') {
-            return <PendingTransactions
-                pendingTransactions={pendingTransactions} setPendingTransactions={setPendingTransactions}
-            />
+            return <PendingTransactions/>
         }else if(clickedMenu === 'completed_transactions'){
-            return(
-                <CompletedTransactions
-                    completedTransactions={completedTransactions}
-                />
-            )
+            return <CompletedTransactions/>;
         }else if(clickedMenu === 'products'){
             return <ProductList/>;
         }else if(clickedMenu.includes("sellinglist")){
             if(clickedMenu==='sellinglist/all'){
                 return <SellingList groupby='none'></SellingList>
             }
+        }else if(clickedMenu === 'http_logs'){
+            return <HttpLog/>
         }
     }
 
@@ -77,10 +54,9 @@ function AdminDashboard(props) {
                             </Menu.Menu>
                         </Menu.Item>
                         <Menu.Item>
-                            <Menu.Header>Users List</Menu.Header>
+                            <Menu.Header>Logs</Menu.Header>
                             <Menu.Menu>
-                                <Menu.Item name="Customers" />
-                                <Menu.Item name="Admins" />
+                                <Menu.Item name="HTTP Logs" onClick={() => setClickedMenu('http_logs')}/>
                             </Menu.Menu>
                         </Menu.Item>
                         <Menu.Item>

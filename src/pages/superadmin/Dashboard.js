@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Grid, Menu, Header, Label } from 'semantic-ui-react';
 import UserList from './UserList';
-import AdminList from './AdminList';
+import HttpLog from '../HttpLog';
 
 function Dashboard(props) {
     const [clickedMenu, setClickedMenu] = useState('');
@@ -10,8 +10,8 @@ function Dashboard(props) {
             return <UserList url='/users?role=3' title={'Customer List'}/>;
         } else if (clickedMenu === 'admins') {
             return <UserList url='/users?role=2' title={'Admin List'}/>;
-        } else if(clickedMenu=='httplog'){
-            
+        } else if(clickedMenu === 'httplog'){
+            return <HttpLog/>
         }
     }
     return (
@@ -36,7 +36,7 @@ function Dashboard(props) {
                         <Menu.Item>
                            <Menu.Header>Logs</Menu.Header>
                            <Menu.Menu>
-                                <Menu.Item name="HTTP Logs" onclick={()=> setClickedMenu('httplog')}/>
+                                <Menu.Item name="HTTP Logs" onClick={()=> setClickedMenu('httplog')}/>
                            </Menu.Menu> 
                         </Menu.Item>
                     </Menu>
