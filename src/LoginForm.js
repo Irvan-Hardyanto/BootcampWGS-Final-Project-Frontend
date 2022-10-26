@@ -16,48 +16,24 @@ const LoginForm = (props) => {
     const [usernameError, setUsernameError] = useState(false);
     const [passwordError, setPasswordError] = useState(false);
     const [loading, setLoading] = useState(false);
-    // const [isLogin, setIsLogin] = useState(false);
-    // const [userData, setUserData] = useState(null);
     const dispatch = useDispatch();
     //sebenarnya ini pakenya JWT 
     const session = useSelector(state=>state.session);
 
-    // constructor(props) {
-    //     super(props);
-    //     this.state = {
-    //         isLoggedIn: false,
-    //         userName: "",
-    //         password: "",
-    //         userNameError: false,
-    //         passwordError: false,
-    //         userData: null,
-    //         loading: false
-    //     }
-
-    //     this.handleUsernameChange = this.handleUsernameChange.bind(this);
-    //     this.handlePasswordChange = this.handlePasswordChange.bind(this);
-    //     this.handleFormSubmit = this.handleFormSubmit.bind(this);
-    //     this.setErrorMessage = this.setErrorMessage.bind(this);
-    // }
-
     const handleUsernameChange = (event) => {
-        // this.setState({ userName: event.target.value, userNameError: false });
         setUsername(event.target.value);
         setUsernameError(false);
     }
 
     const handlePasswordChange = (event) => {
-        // this.setState({ password: event.target.value, passwordError: false });
         setPassword(event.target.value);
         setPasswordError(false);
     }
 
     const setErrorMessage = (param, msg) => {
         if (param === "userName") {
-            // this.setState({ userNameError: msg })
             setUsernameError(msg)
         } else if (param === "password") {
-            // this.setState({ passwordError: msg })
             setPasswordError(msg)
         } else {
             alert(msg);

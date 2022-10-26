@@ -23,6 +23,11 @@ import { configureStore } from '@reduxjs/toolkit';
 import productReducer from './reducers/ProductSlice.js';
 import cartReducer from './reducers/CartSlice';
 import sessionReducer from './reducers/SessionSlice';
+import ProtectedRoute from './components/ProtectedRoute';
+
+const SUPERADMIN_ROLE=1;
+const ADMIN_ROLE=2;
+const CUSTOMER_ROLE=3;
 
 const store = configureStore({
     reducer: {
@@ -129,7 +134,7 @@ const router = createBrowserRouter([
         element: <CheckoutPage></CheckoutPage>
     }, {
         path: "/super-admin/dashboard",
-        element: <Dashboard/>
+        element: <ProtectedRoute redirectRoute={'/login'} authorizedRole={SUPERADMIN_ROLE}><Dashboard/></ProtectedRoute>
     }, {
         path: "/admin/selling-list",
         element: <SellingListPage sellingList={generateDummySellingData(12)}></SellingListPage>

@@ -18,9 +18,21 @@ function AdminDashboard(props) {
         }else if(clickedMenu === 'products'){
             return <ProductList/>;
         }else if(clickedMenu.includes("sellinglist")){
+            let groupby='none';
             if(clickedMenu==='sellinglist/all'){
-                return <SellingList groupby='none'></SellingList>
+                
+            }else if(clickedMenu=== 'sellinglist/daily'){
+                groupby='daily' 
+            }else if(clickedMenu=== 'sellinglist/weekly'){
+                groupby='weekly'
+            }else if(clickedMenu=== 'sellinglist/monthly'){
+                groupby='monthly'
+            }else if(clickedMenu === 'sellinglist/product'){
+                groupby='product'
+            }else if(clickedMenu === 'sellinglist/customer'){
+                groupby='customer'
             }
+            return <SellingList groupby={groupby}></SellingList>;
         }else if(clickedMenu === 'http_logs'){
             return <HttpLog/>
         }
@@ -50,7 +62,7 @@ function AdminDashboard(props) {
                                 <Menu.Item name="Weekly (Coming Soon!)" onClick={()=>setClickedMenu('sellinglist/weekly')}/>
                                 <Menu.Item name="Monthly (Coming Soon!)" onClick={()=>setClickedMenu('sellinglist/monthly')}/>
                                 <Menu.Item name="By Product" onClick={()=>setClickedMenu('sellinglist/product')}/>
-                                <Menu.Item name="By Customer" onClick={()=>setClickedMenu('sellinglist/product')}/>
+                                <Menu.Item name="By Customer" onClick={()=>setClickedMenu('sellinglist/customer')}/>
                             </Menu.Menu>
                         </Menu.Item>
                         <Menu.Item>
