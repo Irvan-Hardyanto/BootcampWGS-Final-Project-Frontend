@@ -1,114 +1,54 @@
 import 'semantic-ui-css/semantic.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import LoginPage from './LoginPage';
-import SignUpPage from './SignUpPage';
-import MainLayout from './MainLayout';
-import ProductDetailModal from './ProductDetailModal';
-import ProductListPage from './ProductListPage';
-import CheckoutPage from './CheckoutPage';
-import SellingListPage from './SellingListPage';
-import ProductListAdmin from './ProductListAdmin';
-import CartPage from './CartPage';
-import PaymentPage from './PaymentPage';
+import LoginPage from './pages/LoginPage';
+import SignUpPage from './pages/SignUpPage';
+import MainLayout from './pages/MainLayout';
+import ProductListPage from './pages/ProductListPage';
+import CheckoutPage from './pages/customer/CheckoutPage';
+import CartPage from './pages/customer/CartPage';
+import PaymentPage from './pages/customer/PaymentPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Dashboard from './pages/superadmin/Dashboard';
-import { faker } from '@faker-js/faker';
 import {
     createBrowserRouter,
     RouterProvider
 } from "react-router-dom";
-import { Provider} from "react-redux";
+import { Provider } from "react-redux";
 import { configureStore } from '@reduxjs/toolkit';
 import productReducer from './reducers/ProductSlice.js';
 import cartReducer from './reducers/CartSlice';
 import sessionReducer from './reducers/SessionSlice';
-import ProtectedRoute from './components/ProtectedRoute';
 
-const SUPERADMIN_ROLE=1;
-const ADMIN_ROLE=2;
-const CUSTOMER_ROLE=3;
+import ProtectedRoute from './components/ProtectedRoute';
+import storage from 'redux-persist/lib/storage';
+import { persistReducer, persistStore } from 'redux-persist';
+import { PersistGate } from 'redux-persist/integration/react'
+import thunk from 'redux-thunk';
+
+const SUPERADMIN_ROLE = 1;
+const ADMIN_ROLE = 2;
+const CUSTOMER_ROLE = 3;
+
+const persistConfig = {
+    key: 'root',
+    storage,
+}
+
+const persistedSessionReducer = persistReducer(persistConfig, sessionReducer);
 
 const store = configureStore({
     reducer: {
         products: productReducer,
         cart: cartReducer,
-        session: sessionReducer
+        session: persistedSessionReducer
     }
 })
 
+const persistor = persistStore(store);
+
 const rootContainer = document.getElementById("root");
 const root = ReactDOM.createRoot(rootContainer);
-
-const getRndInteger = (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-const generateDummyProductData = (productNum) => {
-    let products = [];
-    for (let i = 1; i <= productNum; i++) {
-        products.push({
-            id: i,
-            name: faker.commerce.productName(),
-            description: faker.commerce.productDescription(),
-            price: getRndInteger(10000, 100000),
-            stock: getRndInteger(1, 100),
-            quantity: getRndInteger(1, 100),
-            image: faker.image.food(100, 100, true),
-            createdAt: faker.date.between('2022-09-05T00:00:00.000Z', '2022-10-31T00:00:00.000Z').toDateString(),
-            updatedAt: faker.date.between('2022-09-05T00:00:00.000Z', '2022-10-31T00:00:00.000Z').toDateString()
-        });
-    }
-    return products;
-}
-
-const generateDummyCustomerData = (num) => {
-    let customers = [];
-    for (let i = 1; i <= num; i++) {
-        customers.push({
-            id: i,
-            name: faker.name.fullName(),
-            photo: faker.image.avatar(),
-            email: faker.internet.email(),
-            mobile: faker.phone.number('08##-####-####'),
-            userName: faker.internet.userName(),
-            password: faker.internet.password(10, true)
-
-        })
-    }
-    return customers;
-}
-
-const generateDummySellingData = (num) => {
-    let sellingData = [];
-    for (let i = 1; i <= num; i++) {
-        sellingData.push({
-            id: i,
-            purchaseDate: faker.date.between('2022-09-05T00:00:00.000Z', '2022-10-31T00:00:00.000Z').toDateString(),
-            customerId: getRndInteger(1, 20),
-            customerName: faker.name.fullName(),
-            productId: getRndInteger(1, 100),
-            productName: faker.commerce.productName(),
-            qty: getRndInteger(1, 10),
-            productPrice: getRndInteger(10000, 100000),
-            nominal: getRndInteger(10000, 5000000)
-        })
-    }
-    return sellingData;
-}
-
-const generateDummyCartData = (num)=>{
-    let cartData = [];
-    for (let i = 1; i <= num; i++) {
-        cartData.push({
-            name: faker.commerce.productName(),
-            quantity: getRndInteger(1, 100),
-            unit:  'pieces',
-            price: getRndInteger(10000,20000)
-        })
-    }
-    return cartData;
-}
 
 //client-side routing menggunakan react router
 const router = createBrowserRouter([
@@ -124,37 +64,29 @@ const router = createBrowserRouter([
         path: "/login",
         element: <LoginPage></LoginPage>
     }, {
-        path: "/products",//ini HANYA bisa diakses oleh user dengan role customer yang SUDAH LOGIN
-        element: <ProductListPage></ProductListPage>
-    }, {
-        path: "/modal",
-        element: <ProductDetailModal></ProductDetailModal>
+        path: "/products",
+        element: <ProductListPage />
     }, {
         path: "/checkout",
-        element: <CheckoutPage></CheckoutPage>
-    }, {
-        path: "/super-admin/dashboard",
-        element: <ProtectedRoute redirectRoute={'/login'} authorizedRole={SUPERADMIN_ROLE}><Dashboard/></ProtectedRoute>
-    }, {
-        path: "/admin/selling-list",
-        element: <SellingListPage sellingList={generateDummySellingData(12)}></SellingListPage>
-    }, {
-        path: "/admin/products",
-        element: <ProductListAdmin products={generateDummyProductData(10)}></ProductListAdmin>
+        element: <ProtectedRoute redirectRoute={'/login'} authorizedRole={CUSTOMER_ROLE}><CheckoutPage /></ProtectedRoute>
     }, {
         path: "/cart",
-        element: <CartPage products={generateDummyProductData(10)}></CartPage>
+        element: <ProtectedRoute redirectRoute={'/login'} authorizedRole={CUSTOMER_ROLE}><CartPage /></ProtectedRoute>
     }, {
         path: "/payment",
-        // element: <PaymentPage order={generateDummyCartData(10)}></PaymentPage>
-        element: <PaymentPage></PaymentPage>
-    },{
+        element: <ProtectedRoute redirectRoute={'/login'} authorizedRole={CUSTOMER_ROLE}><PaymentPage /></ProtectedRoute>
+    }, {
+        path: "/super-admin/dashboard",
+        element: <ProtectedRoute redirectRoute={'/login'} authorizedRole={SUPERADMIN_ROLE}><Dashboard /></ProtectedRoute>
+    }, {
         path: "/admin/dashboard",
-        element: <AdminDashboard></AdminDashboard>
+        element: <ProtectedRoute redirectRoute={'/login'} authorizedRole={ADMIN_ROLE}><AdminDashboard /></ProtectedRoute>
     }
 ]);
 root.render(
     <Provider store={store}>
-    <RouterProvider router={router} />
+        <PersistGate loading={null} persistor={persistor}>
+            <RouterProvider router={router} />
+        </PersistGate>
     </Provider>
 );

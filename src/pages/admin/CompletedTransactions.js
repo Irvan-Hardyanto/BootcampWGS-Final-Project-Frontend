@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Table, Pagination, Header, Modal, Button, TransitionablePortal } from 'semantic-ui-react';
+import { Grid, Table, Pagination, Header, Modal, Button } from 'semantic-ui-react';
 import * as format from 'date-format';
 import axios from 'axios';
 import useTable from '../../hooks/useTable';

@@ -4,10 +4,9 @@ import NumberInput from 'semantic-ui-react-numberinput';
 import { Link } from 'react-router-dom';
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { uncheckAllProduct, checkAllProduct, uncheckProduct, checkProduct, editPurchaseQuantity, removeProduct } from "./reducers/CartSlice.js";
+import { uncheckAllProduct, checkAllProduct, uncheckProduct, checkProduct, editPurchaseQuantity, removeProduct } from "../../reducers/CartSlice.js";
 import axios from 'axios';
 import qs from 'qs';
-import { addProducts, addProduct } from "./reducers/CartSlice.js"
 
 const BASE_URL = "http://localhost:9000";
 const axiosInstance = axios.create({

@@ -4,7 +4,7 @@ import axios from 'axios';
 import qs from 'qs';
 import { Navigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { login } from './reducers/SessionSlice';
+import { login } from '../reducers/SessionSlice';
 
 
 //pengennya pake .env, tapi undefined terus.

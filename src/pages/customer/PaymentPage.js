@@ -4,7 +4,6 @@ import { useLocation, Navigate } from 'react-router-dom';
 import { FileUploader } from "react-drag-drop-files";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import qs from "qs";
 
 const BASE_URL = "http://localhost:9000";
 const MAX_IMAGE_SIZE = 1;//dalam satuan MB

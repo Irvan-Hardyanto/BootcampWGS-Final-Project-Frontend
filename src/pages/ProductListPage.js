@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import MainLayout from './MainLayout';
-import CustomHeader from './CustomHeader';
 import ProductCard from './ProductCard';
-import { Card, Button, Grid, Menu, Input, Header, Dropdown } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
+import { Card, Button, Grid, Menu, Input, Header } from 'semantic-ui-react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import qs from 'qs';
 import { useSelector, useDispatch } from "react-redux";
-import ProfileButton from './components/ProfileButton';
 
-import { initProducts } from './reducers/ProductSlice.js';
-import { addProduct } from "./reducers/CartSlice.js"
-
+import { initProducts } from '../reducers/ProductSlice.js';
+import { addProduct } from "../reducers/CartSlice.js";
+import logOut from '../utils/LogOut';
 
 //pengennya pake .env, tapi undefined terus.
 const BASE_URL = "http://localhost:9000";
@@ -26,23 +23,24 @@ const ProductListPage = (props) => {
     const cartStore = useSelector((state) => state.cart.value);
     const [activeMenu, setActiveMenu] = useState("Products");
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleMenuItemClicked = (e, { name }) => {
+        if(name!="Products" && !session.userId){
+            navigate('/login')
+        }
         setActiveMenu(name);
     }
     const renderProfileButton=(userId)=>{
         if(!userId){
             return (
                 <Link to='/login'>
-                    <Button color='green'>Login</Button>
+                    <Button color='green'>Login As Customer</Button>
                 </Link>
             )
         }else{
             return (
-                <>
-                <Button color='blue'>Profile</Button>
-                <Button color='red'>Logout</Button>
-                </>
+                <Button color='red'onClick={()=>logOut(dispatch)}>Logout</Button>
             )
         }
     }
@@ -59,49 +57,54 @@ const ProductListPage = (props) => {
             })
         }
         // console.log('items in cart when at productlistpage are: '+items)
-        axiosInstance.put(`/carts/${session.userId}`, qs.stringify({
-            "items": items
-        }), {
-            headers: {
-                'user-id': session.userId,
-                'user-role': session.role,
-                'content-type': 'application/x-www-form-urlencoded' 
-            }
-        }).catch(err => {
-            console.log(err);
-        })
+        //kalau gak ada yg lagi login -> session.userId nya null, gak usah update cart nya
+        if(session.userId){
+            axiosInstance.put(`/carts/${session.userId}`, qs.stringify({
+                "items": items
+            }), {
+                headers: {
+                    'user-id': session.userId,
+                    'user-role': session.role,
+                    'content-type': 'application/x-www-form-urlencoded' 
+                }
+            }).catch(err => {
+                console.log(err);
+            })
+        }
     }, [cartStore]);
 
     useEffect(() => {
-        axiosInstance.get(`/carts?userId=${session.userId}`,{
-            headers:{
-                'user-id': session.userId,
-                'user-role': session.role,
-            }
-        }).then(response => {
-            //TODO: konversikan format dari db ke format ygbenar (ada picture, harga ,nama nya)
-            JSON.parse(response.data.items).forEach(item => {
-                //ini tuh buat nge get detail setiap produk
-                axiosInstance.get(`/products/${item.productId}`).then(response => {
-                    dispatch(addProduct({
-                        product: {
-                            id: parseInt(item.productId),
-                            image: BASE_URL + '/product/picture/' + item.productId,
-                            name: response.data.name,
-                            price: parseInt(response.data.price),
-                            quantity: parseInt(item.qty),
-                            unit: response.data.unit,
-                            checked: JSON.parse(item.checked.toLowerCase()),
-                        }
-                    }))
-                }).catch(err => {
-                    console.log(err)
+        if(session.userId){
+            axiosInstance.get(`/carts?userId=${session.userId}`,{
+                headers:{
+                    'user-id': session.userId,
+                    'user-role': session.role,
+                }
+            }).then(response => {
+                //TODO: konversikan format dari db ke format ygbenar (ada picture, harga ,nama nya)
+                JSON.parse(response.data.items).forEach(item => {
+                    //ini tuh buat nge get detail setiap produk
+                    axiosInstance.get(`/products/${item.productId}`).then(response => {
+                        dispatch(addProduct({
+                            product: {
+                                id: parseInt(item.productId),
+                                image: BASE_URL + '/product/picture/' + item.productId,
+                                name: response.data.name,
+                                price: parseInt(response.data.price),
+                                quantity: parseInt(item.qty),
+                                unit: response.data.unit,
+                                checked: JSON.parse(item.checked.toLowerCase()),
+                            }
+                        }))
+                    }).catch(err => {
+                        console.log(err)
+                    })
                 })
+                //dispatch(addProducts({products: JSON.parse(response.data.items)}));
+            }).catch(err => {
+                console.log(err);
             })
-            //dispatch(addProducts({products: JSON.parse(response.data.items)}));
-        }).catch(err => {
-            console.log(err);
-        })
+        }
     }, [])
     //panggil API nya cukup sekali saja di awal..
     useEffect(() => {
@@ -136,6 +139,11 @@ const ProductListPage = (props) => {
                     <Menu.Item
                         name="Purchase History"
                         active={activeMenu === "Purchase History"}
+                        onClick={handleMenuItemClicked}
+                    />
+                    <Menu.Item
+                        name="Profile"
+                        active={activeMenu === "Profile"}
                         onClick={handleMenuItemClicked}
                     />
                     <Menu.Item>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, Menu, Header, Label} from 'semantic-ui-react';
+import React, { useState } from 'react';
+import { Grid, Menu, Header } from 'semantic-ui-react';
 import PendingTransactions from './PendingTransactions';
 import CompletedTransactions from './CompletedTransactions';
 import ProductList from './ProductList';

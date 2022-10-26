@@ -14,8 +14,6 @@ const axiosInstance = axios.create({
 
 const ProductList = (props) => {
     const [products, setProducts] = useState([]);
-    const [modalEditProductOpen, setModalEditProductOpen] = useState(false);
-    const [modalDeleteProductOpen, setModalDeleteProductOpen] = useState(false);
 
     useEffect(() => {
         axiosInstance.get('/products').then(response => {
@@ -24,38 +22,6 @@ const ProductList = (props) => {
             alert(error);
         })
     }, [])
-    // constructor(props) {
-    //     super(props);
-    //     this.state = {
-    //         products: [],//array of product objects.
-    //         modalEditProductOpen: false,
-    //         modalDeleteProductOpen: false
-    //     }
-
-    //     axiosInstance.get('/products').then(response=>{
-    //         // console.log(response);
-    //         this.setState({products: response.data});
-    //     }).catch(error=>{
-    //         alert(error);
-    //     })
-    // }
-
-    const openModalEditProduct = () => {
-        setModalEditProductOpen(true);
-    }
-
-    const closeModalEditProduct = () => {
-        setModalEditProductOpen(false);
-    }
-
-    const openModalDeleteProduct = () => {
-        setModalDeleteProductOpen(true);
-    }
-
-    const closeModalDeleteProduct = () => {
-        setModalDeleteProductOpen(false);
-    }
-
 
     return (
         // <Container style={{ maxHeight: "100%", backgroundColor: 'white' }}>

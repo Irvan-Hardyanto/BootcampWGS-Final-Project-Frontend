@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, Modal, Image, Grid, Message, Header, Icon } from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
-import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { addProduct } from "./reducers/CartSlice.js";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { addProduct } from "../reducers/CartSlice.js";
 
 const ProductDetailModal = (props) => {
     const [open, setOpen] = useState(false);
     const [quantity, setQuantity] = useState('1');
     const dispatch = useDispatch();
+    const session = useSelector((state) => state.session);
+    const navigate = useNavigate();
     
     const changePurchaseQuantity = (newQuantity) => {
         // this.setState({ quantity: newQuantity });
@@ -21,18 +23,25 @@ const ProductDetailModal = (props) => {
 
     //tutup modalnya dan tambahkan ke cart
     const closeModal = () => {
-        dispatch(addProduct({
-            product: {
-                id: parseInt(props.id),
-                image: props.imgSrc,
-                name: props.productName,
-                price: parseInt(props.productPrice),
-                quantity: parseInt(quantity),
-                unit: props.unit,
-                checked: false,
-            }
-        }));
-        setOpen(false);
+        console.log('session.userId is: '+session.userId);
+        if(!session.userId){
+            navigate('/login')
+            // return <Navigate to='/login' state={{msg:"You Must Login As Customer First!"}}></Navigate>
+        }else{
+            console.log('dispatching to cart'); 
+            dispatch(addProduct({
+                product: {
+                    id: parseInt(props.id),
+                    image: props.imgSrc,
+                    name: props.productName,
+                    price: parseInt(props.productPrice),
+                    quantity: parseInt(quantity),
+                    unit: props.unit,
+                    checked: false,
+                }
+            }));
+            setOpen(false);
+        }
     }
 
     return (
@@ -93,7 +102,7 @@ const ProductDetailModal = (props) => {
                         }
 
                         }>
-                            <Button color='green' icon labelPosition='left' onClick={closeModal}>
+                            <Button color='green' icon labelPosition='left' onClick={()=>setOpen(false)}>
                                 <Icon name='money bill alternate outline' />
                                 Buy!
                             </Button>

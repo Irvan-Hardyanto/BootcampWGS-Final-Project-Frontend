@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid, Menu, Header, Label } from 'semantic-ui-react';
+import { Grid, Menu, Header } from 'semantic-ui-react';
 import UserList from './UserList';
 import HttpLog from '../HttpLog';
 
