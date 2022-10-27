@@ -51,7 +51,11 @@ const CartPage = (props) => {
         axiosInstance.put(`/carts/${session.userId}`, qs.stringify({
             "items": items
         }), {
-            headers: { 'content-type': 'application/x-www-form-urlencoded' }
+            headers: { 
+                'user-id': session.userId,
+                'user-role': session.role,
+                'content-type': 'application/x-www-form-urlencoded' 
+            }
         }).catch(err => {
             console.log(err);
         })

@@ -17,33 +17,11 @@ const axiosInstance = axios.create({
     baseURL: BASE_URL,
 })
 
-const ProductListPage = (props) => {
+const ProductList = (props) => {
     const products = useSelector((state) => state.products.value);
     const session = useSelector((state) => state.session);
     const cartStore = useSelector((state) => state.cart.value);
-    const [activeMenu, setActiveMenu] = useState("Products");
     const dispatch = useDispatch();
-    const navigate = useNavigate();
-
-    const handleMenuItemClicked = (e, { name }) => {
-        if(name!="Products" && !session.userId){
-            navigate('/login')
-        }
-        setActiveMenu(name);
-    }
-    const renderProfileButton=(userId)=>{
-        if(!userId){
-            return (
-                <Link to='/login'>
-                    <Button color='green'>Login As Customer</Button>
-                </Link>
-            )
-        }else{
-            return (
-                <Button color='red'onClick={()=>logOut(dispatch)}>Logout</Button>
-            )
-        }
-    }
 
     useEffect(() => {
         // console.log('cartis modifiedon productListPage!')
@@ -58,14 +36,14 @@ const ProductListPage = (props) => {
         }
         // console.log('items in cart when at productlistpage are: '+items)
         //kalau gak ada yg lagi login -> session.userId nya null, gak usah update cart nya
-        if(session.userId){
+        if (session.userId) {
             axiosInstance.put(`/carts/${session.userId}`, qs.stringify({
                 "items": items
             }), {
                 headers: {
                     'user-id': session.userId,
                     'user-role': session.role,
-                    'content-type': 'application/x-www-form-urlencoded' 
+                    'content-type': 'application/x-www-form-urlencoded'
                 }
             }).catch(err => {
                 console.log(err);
@@ -74,9 +52,9 @@ const ProductListPage = (props) => {
     }, [cartStore]);
 
     useEffect(() => {
-        if(session.userId){
-            axiosInstance.get(`/carts?userId=${session.userId}`,{
-                headers:{
+        if (session.userId) {
+            axiosInstance.get(`/carts?userId=${session.userId}`, {
+                headers: {
                     'user-id': session.userId,
                     'user-role': session.role,
                 }
@@ -106,9 +84,21 @@ const ProductListPage = (props) => {
             })
         }
     }, [])
+
+    const searchProduct = (query = '', products) => {
+        return products.filter(product => { 
+            if(query===''){
+                return product
+            }else{
+                return product.name.toLowerCase().includes(query);
+            }
+        })
+    }
     //panggil API nya cukup sekali saja di awal..
     useEffect(() => {
+        console.log('FETCHING PRODUCT FROM DATABASE')
         axiosInstance.get('/products').then(response => {
+            let products = response.data;
             dispatch(initProducts({ products: response.data }))
         }).catch(error => {
             console.log(error);
@@ -116,56 +106,12 @@ const ProductListPage = (props) => {
     }, []);
 
     return (
-        <Grid padded style={{ height: '100%' }}>
-            <Grid.Row style={{ height: '10%', backgroundColor: 'white' }}>
-                <Menu secondary style={{ height: '100%' }}>
-                    <Menu.Item>
-                        <Header as='h1'>SHOPPING APP</Header>
-                    </Menu.Item>
-                    <Menu.Item
-                        name="Products"
-                        active={activeMenu === "Products"}
-                        onClick={handleMenuItemClicked}
-                    />
-                    <Menu.Item
-                        name="Cart"
-                        active={activeMenu === "Cart"}
-                        onClick={handleMenuItemClicked}
-                    >
-                        <Link to="/cart">
-                            Cart
-                        </Link>
-                    </Menu.Item>
-                    <Menu.Item
-                        name="Purchase History"
-                        active={activeMenu === "Purchase History"}
-                        onClick={handleMenuItemClicked}
-                    />
-                    <Menu.Item
-                        name="Profile"
-                        active={activeMenu === "Profile"}
-                        onClick={handleMenuItemClicked}
-                    />
-                    <Menu.Item>
-                        <Input className='icon' icon='search' placeholder='Search...' />
-                    </Menu.Item>
-                    <Menu.Menu position='right'>
-                        {renderProfileButton(session.userId)}
-                    </Menu.Menu>
-                </Menu>
-            </Grid.Row>
-            <Grid.Row style={{ height: '90%' }}>
-                <Grid.Column>
-                    <Card.Group centered itemsPerRow={6}>
-                        {products.map((product, idx) => {
-                            return <ProductCard key={product.id} stock={product.stock} unit={product.unit} id={product.id} name={product.name} imgSrc={BASE_URL + '/product/picture/' + product.id} price={product.price} description={product.description}></ProductCard>;
-                        })}
-                    </Card.Group>
-                </Grid.Column>
-            </Grid.Row>
-        </Grid>
-
+        <Card.Group centered itemsPerRow={6}>
+            {searchProduct(props.searchQuery,products).map((product, idx) => {
+                return <ProductCard key={product.id} stock={product.stock} unit={product.unit} id={product.id} name={product.name} imgSrc={BASE_URL + '/product/picture/' + product.id} price={product.price} description={product.description}></ProductCard>;
+            })}
+        </Card.Group>
     )
 }
 
-export default ProductListPage;
+export default ProductList;

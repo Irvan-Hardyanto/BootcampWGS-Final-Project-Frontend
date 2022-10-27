@@ -4,12 +4,13 @@ import ReactDOM from 'react-dom/client';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import MainLayout from './pages/MainLayout';
-import ProductListPage from './pages/ProductListPage';
+import LandingPage from './pages/customer/LandingPage';
 import CheckoutPage from './pages/customer/CheckoutPage';
 import CartPage from './pages/customer/CartPage';
 import PaymentPage from './pages/customer/PaymentPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Dashboard from './pages/superadmin/Dashboard';
+import ProfilePage from './pages/customer/ProfilePage';
 import {
     createBrowserRouter,
     RouterProvider
@@ -24,7 +25,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import storage from 'redux-persist/lib/storage';
 import { persistReducer, persistStore } from 'redux-persist';
 import { PersistGate } from 'redux-persist/integration/react'
-import thunk from 'redux-thunk';
 
 const SUPERADMIN_ROLE = 1;
 const ADMIN_ROLE = 2;
@@ -65,7 +65,7 @@ const router = createBrowserRouter([
         element: <LoginPage></LoginPage>
     }, {
         path: "/products",
-        element: <ProductListPage />
+        element: <LandingPage />
     }, {
         path: "/checkout",
         element: <ProtectedRoute redirectRoute={'/login'} authorizedRole={CUSTOMER_ROLE}><CheckoutPage /></ProtectedRoute>
@@ -81,6 +81,9 @@ const router = createBrowserRouter([
     }, {
         path: "/admin/dashboard",
         element: <ProtectedRoute redirectRoute={'/login'} authorizedRole={ADMIN_ROLE}><AdminDashboard /></ProtectedRoute>
+    },{
+        path:"/profile",
+        element: <ProfilePage></ProfilePage>
     }
 ]);
 root.render(

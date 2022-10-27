@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Grid, Menu, Header } from 'semantic-ui-react';
+import { Grid, Menu, Header, Button } from 'semantic-ui-react';
 import PendingTransactions from './PendingTransactions';
 import CompletedTransactions from './CompletedTransactions';
 import ProductList from './ProductList';
 import SellingList from './SellingList';
 import HttpLog from '../HttpLog';
+import logOut from '../../utils/LogOut';
+import { useDispatch } from "react-redux";
 
 function AdminDashboard(props) {
     const [clickedMenu, setClickedMenu] = useState('');
+    const dispatch=useDispatch();
 
     const showMainContent = () => {
         console.log('type of clickedMenu is: '+(typeof clickedMenu))
@@ -41,8 +44,11 @@ function AdminDashboard(props) {
     return (
         <Grid padded style={{ height: "100%" }}>
             <Grid.Row style={{ height: "10%" }}>
-                <Grid.Column>
+                <Grid.Column width={8}>
                     <Header as='h1'>Admin Dashboard</Header>
+                </Grid.Column>
+                <Grid.Column width={8}>
+                    <Button color='red' onClick={()=>logOut(dispatch)}>Logout</Button>
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ height: "90%" }}>

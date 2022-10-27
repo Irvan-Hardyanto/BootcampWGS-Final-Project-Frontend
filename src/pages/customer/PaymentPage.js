@@ -64,11 +64,6 @@ function PaymentPage(props) {
         }else{
             setLoading(true);
             const formData = new FormData();
-            console.log('THIS FUCKING HANDLE SUBMIT SHOULD BE SENDING DATA')
-            console.log('userId is: '+session.userId);
-            console.log('items is: '+JSON.stringify(formatOrder(order)));
-            console.log('nominal is: '+countTotalPrice(order));
-            console.log('paymentConfirmation is: '+paymentConfirmation);
 
             formData.append("userId",session.userId);
             formData.append("items",JSON.stringify(formatOrder(order)));
@@ -80,7 +75,11 @@ function PaymentPage(props) {
                 console.log(`${key}: ${value}`);
               }
             axiosInstance.post('/payments',formData, {
-                headers: { 'content-type': 'multipart/form-data; boundary=-----rick' }
+                headers: {
+                    'user-id': session.userId,
+                    'user-role': session.role,
+                    'content-type': 'multipart/form-data; boundary=-----rick' 
+                }
             }).then(response=>{
                 setLoading(false);
                 setPaymentCompleted(true);//untuk redirect ke halaman detail produk

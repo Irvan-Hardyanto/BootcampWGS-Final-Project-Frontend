@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Grid, Menu, Header } from 'semantic-ui-react';
+import { Grid, Menu, Header, Button } from 'semantic-ui-react';
 import UserList from './UserList';
 import HttpLog from '../HttpLog';
+import logOut from '../../utils/LogOut';
+import { useDispatch } from "react-redux";
 
 function Dashboard(props) {
     const [clickedMenu, setClickedMenu] = useState('');
+    const dispatch=useDispatch();
+
     const showMainContent = () => {
         if (clickedMenu === 'customers') {
             return <UserList url='/users?role=3' title={'Customer List'}/>;
@@ -17,8 +21,11 @@ function Dashboard(props) {
     return (
         <Grid padded style={{ height: "100%" }}>
             <Grid.Row style={{ height: "10%" }}>
-                <Grid.Column>
+                <Grid.Column width={8}>
                     <Header as='h1'>Super Admin Dashboard</Header>
+                </Grid.Column>
+                <Grid.Column width={8}>
+                    <Button color='red' onClick={()=>logOut(dispatch)}>Log Out</Button>
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ height: "90%" }}>

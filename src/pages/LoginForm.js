@@ -54,10 +54,15 @@ const LoginForm = (props) => {
             }), {
                 headers: { 'content-type': 'application/x-www-form-urlencoded' }
             }).then(response => {
+                console.log('response.data is: '+response);
                 setLoading(false);
                 dispatch(login({
                     userId: response.data.id,
                     role: response.data.role,
+                    fullname: response.data.fullname,
+                    email: response.data.email,
+                    mobile: response.data.mobile,
+                    picture: response.data.picture,
                     accessToken: response.data.accessToken,
                     refreshToken: response.data.refreshToken
                 }))
