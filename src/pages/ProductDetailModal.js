@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Modal, Image, Grid, Message, Header, Icon } from 'semantic-ui-react';
+import { Button, Modal, Image, Grid, Message, Header, Icon, Label } from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -8,13 +8,18 @@ import { addProduct } from "../reducers/CartSlice.js";
 const ProductDetailModal = (props) => {
     const [open, setOpen] = useState(false);
     const [quantity, setQuantity] = useState('1');
+    const [canBuy,setCanBuy]=useState(true);
     const dispatch = useDispatch();
     const session = useSelector((state) => state.session);
     const navigate = useNavigate();
     
     const changePurchaseQuantity = (newQuantity) => {
-        // this.setState({ quantity: newQuantity });
         setQuantity(newQuantity);
+        if(parseInt(newQuantity)>props.stock){
+            setCanBuy(false)
+        }else{
+            setCanBuy(true);
+        }
     }
 
     const openModal = () => {
@@ -27,7 +32,7 @@ const ProductDetailModal = (props) => {
         if(!session.userId){
             navigate('/login')
             // return <Navigate to='/login' state={{msg:"You Must Login As Customer First!"}}></Navigate>
-        }else{
+        }else if(canBuy){
             console.log('dispatching to cart'); 
             dispatch(addProduct({
                 product: {
@@ -44,13 +49,32 @@ const ProductDetailModal = (props) => {
         }
     }
 
+    const handleButtonBuyClicked=()=>{
+        if(canBuy){
+            navigate('/checkout',{state:{//awalnya state nya itu array doang.
+                products: [
+                    {
+                        id: props.id,
+                        image: props.imgSrc,
+                        name: props.productName,
+                        price: props.productPrice,
+                        quantity: parseInt(quantity),
+                        unit: props.unit
+                    }
+                ],
+                prevPage: 'product_detail_modal'
+            }})
+        }
+
+    }
+
     return (
         <div>
             <Button style={{ width: "100%" }} color='blue' onClick={openModal}>
                 See Details and Buy
             </Button>
 
-            <Modal dimmer={'blurring'} open={open} onClose={closeModal}>
+            <Modal dimmer={'blurring'} open={open} onClose={()=>setOpen(false)}>
                 <Modal.Header>PRODUCT DETAILS</Modal.Header>
                 <Modal.Content>
                     <Grid columns={3} padded divided>
@@ -66,6 +90,7 @@ const ProductDetailModal = (props) => {
                                 </p>
                                 <div style={{ display: "flex", alignItems: "center" }}>
                                     <NumberInput className="numberInput" value={quantity} onChange={changePurchaseQuantity} /> &nbsp;&nbsp;&nbsp;{props.unit}
+                                    {canBuy?"": <>&nbsp;&nbsp;<Label color='red'>Insufficient Stock</Label></>}
                                 </div>
 
                                 <Message info>
@@ -87,7 +112,7 @@ const ProductDetailModal = (props) => {
                 </Modal.Content>
                 <Modal.Actions>
                     <Button.Group>
-                        <Link to='/checkout' state={{//awalnya state nya itu array doang.
+                        {/* <Link to='/checkout' state={{//awalnya state nya itu array doang.
                             products: [
                                 {
                                     id: props.id,
@@ -101,15 +126,15 @@ const ProductDetailModal = (props) => {
                             prevPage: 'product_detail_modal'
                         }
 
-                        }>
-                            <Button color='green' icon labelPosition='left' onClick={()=>setOpen(false)}>
+                        }> */}
+                            <Button disabled={!canBuy} color='green' icon labelPosition='left' onClick={handleButtonBuyClicked}>
                                 <Icon name='money bill alternate outline' />
                                 Buy!
                             </Button>
-                        </Link>
+                        {/* </Link> */}
                         <Button.Or />
 
-                        <Button color='yellow' icon labelPosition='right' onClick={closeModal}>
+                        <Button disabled={!canBuy} color='yellow' icon labelPosition='right' onClick={closeModal}>
                             Add to Cart
                             <Icon name='cart arrow down' />
                         </Button>

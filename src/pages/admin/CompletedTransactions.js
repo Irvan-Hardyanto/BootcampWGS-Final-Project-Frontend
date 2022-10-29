@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Table, Pagination, Header, Modal, Button } from 'semantic-ui-react';
+import { Grid, Table, Pagination, Header, Modal, Button, Input } from 'semantic-ui-react';
 import * as format from 'date-format';
 import axios from 'axios';
 import useTable from '../../hooks/useTable';
+import { useSelector } from "react-redux";
 
 const BASE_URL = "http://localhost:9000";
 const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
@@ -15,13 +16,21 @@ function CompletedTransactions(props) {
     const ROWS_PER_PAGE = 5;
     const [activePage, setActivePage] = useState(1);
     const [completedTransactions, setCompletedTransactions] = useState([]);
-    const { slice, range } = useTable(completedTransactions, activePage, ROWS_PER_PAGE);
+    const [filteredCompletedTransactions, setFilteredCompletedTransactions] = useState([]);
+    const { slice, range } = useTable(filteredCompletedTransactions, activePage, ROWS_PER_PAGE);
     const [modalItemsOpen, setModalItemsOpen] = useState(false);
     const [items, setItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
+    const session = useSelector((state) => state.session);
 
     useEffect(() => {
-        axiosInstance.get('/payments').then(response => {
+        axiosInstance.get('/payments',{
+            headers:{
+                'user-id': session.userId,
+                'user-role': session.role,
+            }
+        }).then(response => {
+            setFilteredCompletedTransactions(response.data.filter(row => row.paid));
             setCompletedTransactions(response.data.filter(row => row.paid));
         })
     }, [])
@@ -38,11 +47,27 @@ function CompletedTransactions(props) {
         setModalItemsOpen(true);
     }
 
+    const handleSearchBarInput = (event) => {
+        const query = event.target.value.toLowerCase();
+        setFilteredCompletedTransactions(completedTransactions.filter(transaction=>{
+            if(query===''){
+                return transaction
+            }else{
+                return transaction.name.toLowerCase().includes(query) ||
+                format.asString(DATE_FORMAT, new Date(transaction.updatedAt)).toString().includes(query)||
+                transaction.nominal.toString()==query
+            }
+        }))
+    }
+
     return (
         <Grid verticalAlign='middle' padded style={{ height: "100%" }}>
             <Grid.Row style={{ height: "12%" }}>
-                <Grid.Column>
+                <Grid.Column width={5}>
                     <Header as='h1'>Completed Transactions</Header>
+                </Grid.Column>
+                <Grid.Column width={11}>
+                    <Input style={{width:'100%'}} className='icon' icon='search' placeholder='Search Completed Transactions' onChange={handleSearchBarInput} />
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ padding: "0px", height: "78%" }}>
@@ -50,8 +75,8 @@ function CompletedTransactions(props) {
                     <Table.Header>
                         <Table.Row>
                             <Table.HeaderCell>No</Table.HeaderCell>
-                            <Table.HeaderCell>Payment Id</Table.HeaderCell>
-                            <Table.HeaderCell>User Id</Table.HeaderCell>
+                            <Table.HeaderCell>Transaction Id</Table.HeaderCell>
+                            <Table.HeaderCell>Customer Name</Table.HeaderCell>
                             <Table.HeaderCell>Paid At</Table.HeaderCell>
                             <Table.HeaderCell>Items</Table.HeaderCell>
                             <Table.HeaderCell>Nominal</Table.HeaderCell>
@@ -63,7 +88,7 @@ function CompletedTransactions(props) {
                                 <Table.Row key={row.id}>
                                     <Table.Cell>{idx + 1}</Table.Cell>
                                     <Table.Cell>{row.id}</Table.Cell>
-                                    <Table.Cell collapsing>{row.userId}</Table.Cell>
+                                    <Table.Cell collapsing>{row.name}</Table.Cell>
                                     <Table.Cell collapsing>{format.asString(DATE_FORMAT, new Date(row.updatedAt))}</Table.Cell>
                                     <Table.Cell><Button primary onClick={() => handleButtonItemsClicked(row.items,row.nominal)}>Show Purchased Items</Button></Table.Cell>
                                     <Table.Cell collapsing>{`Rp. ${row.nominal.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Table.Cell>

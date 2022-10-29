@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { List, Container, Grid, Header, Image, Search, Checkbox, Segment, Button, Icon } from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
 import { Link } from 'react-router-dom';
@@ -29,7 +29,7 @@ const CartPage = (props) => {
 
     //ketika ada produk yang di check atau uncheck, perbarui total harga nya
     useEffect(() => {
-        // console.log('cartis modifiedon cartPage!')
+        console.log('cartis modifiedon cartPage!')
         // console.log('items in cart are')
         let sumPrice = 0;
         for (let product of cartStore) {
@@ -93,7 +93,7 @@ const CartPage = (props) => {
                 </Grid.Row>
                 <Grid.Row style={{ height: "75%", padding: "0px" }}>
                     <Grid.Column>
-                        <Search placeholder="Search a product in your cart..." input={{ fluid: true }} style={{ marginBottom: "2px" }}></Search>
+                        {/*<Search placeholder="Search a product in your cart..." input={{ fluid: true }} style={{ marginBottom: "2px" }}></Search>*/}
                         <Grid verticalAlign="middle" padded>
                             <Grid.Row columns={2}>
                                 <Grid.Column width={1}>

@@ -3,29 +3,44 @@ import { Grid, Menu, Header, Button } from 'semantic-ui-react';
 import UserList from './UserList';
 import HttpLog from '../HttpLog';
 import logOut from '../../utils/LogOut';
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 function Dashboard(props) {
-    const [clickedMenu, setClickedMenu] = useState('');
-    const dispatch=useDispatch();
+    const [clickedMenu, setClickedMenu] = useState('customers');
+    const dispatch = useDispatch();
+    const session = useSelector((state) => state.session);
 
     const showMainContent = () => {
         if (clickedMenu === 'customers') {
-            return <UserList url='/users?role=3' title={'Customer List'}/>;
+            return <UserList url='/users?role=3' title={'Customer List'} />;
         } else if (clickedMenu === 'admins') {
-            return <UserList url='/users?role=2' title={'Admin List'}/>;
-        } else if(clickedMenu === 'httplog'){
-            return <HttpLog/>
+            return <UserList url='/users?role=2' title={'Admin List'} />;
+        } else if (clickedMenu === 'httplog') {
+            return <HttpLog />
+        } else if (clickedMenu === '') {
+            return (
+                <div>
+                    <Header as="h1">{`Welcome back, ${session.fullname}`}</Header>
+                    <p>You May Start Working Now...</p>
+                </div>
+            )
         }
     }
     return (
         <Grid padded style={{ height: "100%" }}>
             <Grid.Row style={{ height: "10%" }}>
-                <Grid.Column width={8}>
-                    <Header as='h1'>Super Admin Dashboard</Header>
-                </Grid.Column>
-                <Grid.Column width={8}>
-                    <Button color='red' onClick={()=>logOut(dispatch)}>Log Out</Button>
+                <Grid.Column>
+                    <Menu>
+                        <Menu.Item>
+                            <Header as='h1'>Super Admin Dashboard</Header>
+                        </Menu.Item>
+                        <Menu.Item position='right'>
+                            {`Logged in as ${session.fullname}`}
+                        </Menu.Item>
+                        <Menu.Item position='right'>
+                            <Button color='red' onClick={() => logOut(dispatch)}>Log Out</Button>
+                        </Menu.Item>
+                    </Menu>
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ height: "90%" }}>
@@ -41,10 +56,10 @@ function Dashboard(props) {
                             </Menu.Menu>
                         </Menu.Item>
                         <Menu.Item>
-                           <Menu.Header>Logs</Menu.Header>
-                           <Menu.Menu>
-                                <Menu.Item name="HTTP Logs" onClick={()=> setClickedMenu('httplog')}/>
-                           </Menu.Menu> 
+                            <Menu.Header>Logs</Menu.Header>
+                            <Menu.Menu>
+                                <Menu.Item name="HTTP Logs" onClick={() => setClickedMenu('httplog')} />
+                            </Menu.Menu>
                         </Menu.Item>
                     </Menu>
                 </Grid.Column>

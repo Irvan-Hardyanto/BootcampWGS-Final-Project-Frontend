@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 // import CustomHeader from './CustomHeader';
-import { List, Container, Grid, Header, Image, Button } from 'semantic-ui-react';
+import { List, Container, Grid, Header, Image, Button, Input } from 'semantic-ui-react';
 import axios from 'axios';
 import AddProductModal from './AddProductModal';
+import EditProductModal from './EditProductModal';
 import * as format from 'date-format';
 
 const BASE_URL = "http://localhost:9000";
@@ -14,7 +15,24 @@ const axiosInstance = axios.create({
 
 const ProductList = (props) => {
     const [products, setProducts] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [editModalOpen,setEditModalOpen]=useState(false);
+    const [selectedProduct,setSelectedProduct]=useState(null);
 
+    const searchProduct = (query = '', products) => {
+        query=query.toLowerCase();
+        return products.filter(product => { 
+            if(query===''){
+                return product
+            }else{
+                return product.name.toLowerCase().includes(query);
+            }
+        })
+    }
+    const handleSearchBarInput = (event) => {
+        // console.log('search bar value is changed...')
+        setSearchQuery(event.target.value);
+    }
     useEffect(() => {
         axiosInstance.get('/products').then(response => {
             setProducts(response.data)
@@ -22,6 +40,12 @@ const ProductList = (props) => {
             alert(error);
         })
     }, [])
+
+    const toggleEditProductModal=(product)=>{
+        console.log('selected product is: '+product.name)
+        setEditModalOpen(true);
+        setSelectedProduct(product);
+    }
 
     return (
         // <Container style={{ maxHeight: "100%", backgroundColor: 'white' }}>
@@ -32,21 +56,24 @@ const ProductList = (props) => {
                     <Grid.Column>
                         <Grid verticalAlign='middle'>
                             <Grid.Row>
-                                <Grid.Column floated='left' width={6}>
-                                    <Header as='h1'>PRODUCT LIST (ADMIN)</Header>
+                                <Grid.Column floated='left' width={3}>
+                                    <Header as='h1'>PRODUCTS</Header>
+                                </Grid.Column>
+                                <Grid.Column  width={8}>
+                                    <Input style={{width:'100%'}} className='icon' icon='search' placeholder='Search Product(s) by name...' onChange={handleSearchBarInput}/>
                                 </Grid.Column>
                                 <Grid.Column floated='right' width={5}>
-                                    <AddProductModal></AddProductModal>
+                                    <AddProductModal products={products} setProducts={setProducts}></AddProductModal>
                                 </Grid.Column>
                             </Grid.Row>
                         </Grid>
-                        <Container style={{ maxHeight: "70vh", overflow: "Auto" }}>
+                        <Container style={{ maxHeight: "70vh", overflow: "Auto" ,minHeight: "70vh"}}>
                             <List divided verticalAlign='middle' style={{ margin: "0px" }}>
-                                {products.map((product, idx) => {
+                                {searchProduct(searchQuery,products).map((product, idx) => {
                                     return (
                                         <List.Item key={product.id}>
                                             <Grid verticalAlign='middle' padded>
-                                                <Grid.Row columns={3}>
+                                                <Grid.Row columns={3} style={{padding:'0px'}}>
                                                     <Grid.Column width={2} style={{ padding: "0.2em 0px" }}>
                                                         <Image src={BASE_URL + '/product/picture/' + product.id} fluid />
                                                     </Grid.Column>
@@ -85,7 +112,7 @@ const ProductList = (props) => {
                                                     </Grid.Column>
                                                     <Grid.Column width={4}>
                                                         <Button.Group size='large'>
-                                                            <Button color="blue">Edit</Button>
+                                                            <Button color="blue" onClick={()=>toggleEditProductModal(product)}>Edit</Button>
                                                             <Button.Or />
                                                             <Button color="red">Delete</Button>
                                                         </Button.Group>
@@ -99,6 +126,7 @@ const ProductList = (props) => {
                         </Container>
                     </Grid.Column>
                 </Grid.Row>
+                <EditProductModal modalOpen={editModalOpen} setModalOpen={setEditModalOpen} product={selectedProduct}/> 
             </Grid>
         // </Container>
     )

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Header, Table, Pagination, Label, Button, Icon } from 'semantic-ui-react';
+import { Grid, Header, Table, Pagination, Label, Button, Icon, Input } from 'semantic-ui-react';
 import * as format from 'date-format';
 import axios from 'axios';
 import useTable from '../hooks/useTable';
 import { CSVLink } from "react-csv";
 import _ from 'lodash';
+import { useSelector } from "react-redux";
 
 const BASE_URL = "http://localhost:9000";
 const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
@@ -40,16 +41,21 @@ const formatStatusCode = (statusCode) => {
     }
 }
 
+//kalau mau lebih rapih lagi, filter log nya di backend, pake WHERE method LIKE ... OR status LIKE ...
 function HttpLog(props) {
     const ROWS_PER_PAGE = 8;
     const [activePage, setActivePage] = useState(1);
-    const [log, setLog] = useState([]);
-    const { slice, range } = useTable(log, activePage, ROWS_PER_PAGE);
+    const [log, setLog] = useState([]);//data log yang apa adanya dari database
+    const [filteredLog,setFilteredLog] = useState([]);//data log yang sudah di-filter berdasarkan kueri tertentu
+    const { slice, range } = useTable(filteredLog, activePage, ROWS_PER_PAGE);
     const [csvData, setCsvData] = useState([]);
-    // let csvData=[]
+    const [searchQuery, setSearchQuery] = useState('')
+    const session = useSelector((state) => state.session);
 
     const formatLogToCSV = (logs) => {
-        let csvData = [[LOG_FIELDS]];
+        let csvData = [];
+        csvData.push(LOG_FIELDS);
+        console.log('csv Data header is: '+csvData);
         //header csv nya
 
         //isi dari csv nya
@@ -60,9 +66,15 @@ function HttpLog(props) {
     }
 
     useEffect(() => {
-        axiosInstance.get('/logs').then(response => {
+        axiosInstance.get('/logs',{
+            headers:{
+                'user-id': session.userId,
+                'user-role': session.role,
+            }
+        }).then(response => {
             setCsvData(formatLogToCSV(response.data));
             setLog(response.data);
+            setFilteredLog(response.data);
         }).catch(err => {
             console.log(err);
         })
@@ -71,14 +83,41 @@ function HttpLog(props) {
     const handlePageChange = (event, data) => {
         setActivePage(data.activePage);
     }
+    const handleSearchBarInput = (event) => {
+        // console.log('search bar value is changed...')
+        // setSearchQuery(event.target.value);
+        setFilteredLog(searchLog(event.target.value,log));
+    }
+
+    const searchLog = (query = '', logs) => {
+        
+        return logs.filter(log => { 
+            query=query.toLowerCase();
+ 
+            if(query===''){
+                return log
+            }else{
+                // search by method/date/statuscode/path/url???
+                
+                return log.url.toLowerCase().includes(query)||
+                log.method.toLowerCase().includes(query)||
+                log.statusCode.toString().toLowerCase().includes(query) ||
+                format.asString(DATE_FORMAT, new Date(log.timestamp)).toString().includes(query)
+  
+            }
+        })
+    }
 
     return (
         <Grid verticalAlign='middle' padded style={{ height: "100%" }}>
             <Grid.Row style={{ height: "12%" }}>
-                <Grid.Column width={4}>
+                <Grid.Column width={3}>
                     <Header as='h1'>HTTP Logs</Header>
                 </Grid.Column>
-                <Grid.Column width={12}>
+                <Grid.Column width={9}>
+                    <Input style={{width:'100%'}} className='icon' icon='search' placeholder='Search...' onChange={handleSearchBarInput} />
+                </Grid.Column>
+                <Grid.Column width={4}>
                     <CSVLink filename="http-logs" data={csvData}>
                         <Button icon labelPosition='left' primary>
                             <Icon name='download' />
@@ -105,7 +144,7 @@ function HttpLog(props) {
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                        {slice.map((row, idx) => {
+                        {searchLog(searchQuery,slice).map((row, idx) => {
                             return (
                                 <Table.Row key={row.logId} textAlign='center'>
                                     <Table.Cell>{((activePage - 1) * ROWS_PER_PAGE) + idx + 1}</Table.Cell>

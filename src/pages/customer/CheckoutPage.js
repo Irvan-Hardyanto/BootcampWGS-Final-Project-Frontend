@@ -96,7 +96,7 @@ const CheckoutPage = (props) => {
                     </Grid.Column>
                 </Grid.Row>
             </Grid>
-            <Modal size="tiny" dimmer='blurring' open={confirmOrderOpen} onClose={closeConfirmOrderModal}>
+            <Modal size="tiny" dimmer='blurring' open={confirmOrderOpen} onClose={()=>setConfirmOrderOpen(false)}>
                 <Modal.Content>
                     <Message warning>
                         <Message.Header>Are You Sure With Your Order?</Message.Header>
@@ -105,7 +105,7 @@ const CheckoutPage = (props) => {
                 </Modal.Content>
                 <Modal.Actions>
                     {/* redirect ke halaman pembayaran */}
-                    <Button negative onClick={closeConfirmOrderModal}>
+                    <Button negative onClick={()=>setConfirmOrderOpen(false)}>
                         No
                     </Button>
                     <Button positive onClick={closeConfirmOrderModal}>

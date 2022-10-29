@@ -23,8 +23,54 @@ const ProductList = (props) => {
     const cartStore = useSelector((state) => state.cart.value);
     const dispatch = useDispatch();
 
+
+    //ketika 'effect' yg ini jalan, harusnya effect yang di bawah gak ketriger
+    //tapi ternyata ketika 'effect' ini jalan, 'effect' yang bawah juga ke trigger, jadi ngaco isi cart nya
     useEffect(() => {
-        // console.log('cartis modifiedon productListPage!')
+        axiosInstance.get('/products').then(response => {
+            let products = response.data;
+            dispatch(initProducts({ products: response.data }))
+        }).catch(error => {
+            console.log(error);
+        })
+        console.log('FETCHING FLAG IS:'+ props.fetching);
+            axiosInstance.get(`/carts?userId=${session.userId}`, {
+                headers: {
+                    'user-id': session.userId,
+                    'user-role': session.role,
+                }
+            }).then(response => {
+                //TODO: konversikan format dari db ke format ygbenar (ada picture, harga ,nama nya)
+                JSON.parse(response.data.items).forEach(item => {
+                    //ini tuh buat nge get detail setiap produk
+                    axiosInstance.get(`/products/${item.productId}`).then(response => {
+                        dispatch(addProduct({
+                            product: {
+                                id: parseInt(item.productId),
+                                image: BASE_URL + '/product/picture/' + item.productId,
+                                name: response.data.name,
+                                price: parseInt(response.data.price),
+                                quantity: parseInt(item.qty),
+                                unit: response.data.unit,
+                                checked: JSON.parse(item.checked.toLowerCase()),
+                            }
+                        }))
+                    }).catch(err => {
+                        console.log(err)
+                    })
+                })
+                props.initialRender.current = false;
+            }).catch(err => {
+                console.log(err);
+            })
+    }, [])
+
+
+    useEffect(() => {
+        //kalo operasi ngambil data cart dari db belom selesai,jangan lakukan apa-apa
+        console.log("PROTECTION IS: "+props.initialRender.current);
+        if(props.initialRender.current) return;
+        console.log('cartis modifiedon productListPage!')
         // console.log('items in cart are')
         let items = [];
         for (let i = 0; i < cartStore.length; i++) {
@@ -51,40 +97,6 @@ const ProductList = (props) => {
         }
     }, [cartStore]);
 
-    useEffect(() => {
-        if (session.userId) {
-            axiosInstance.get(`/carts?userId=${session.userId}`, {
-                headers: {
-                    'user-id': session.userId,
-                    'user-role': session.role,
-                }
-            }).then(response => {
-                //TODO: konversikan format dari db ke format ygbenar (ada picture, harga ,nama nya)
-                JSON.parse(response.data.items).forEach(item => {
-                    //ini tuh buat nge get detail setiap produk
-                    axiosInstance.get(`/products/${item.productId}`).then(response => {
-                        dispatch(addProduct({
-                            product: {
-                                id: parseInt(item.productId),
-                                image: BASE_URL + '/product/picture/' + item.productId,
-                                name: response.data.name,
-                                price: parseInt(response.data.price),
-                                quantity: parseInt(item.qty),
-                                unit: response.data.unit,
-                                checked: JSON.parse(item.checked.toLowerCase()),
-                            }
-                        }))
-                    }).catch(err => {
-                        console.log(err)
-                    })
-                })
-                //dispatch(addProducts({products: JSON.parse(response.data.items)}));
-            }).catch(err => {
-                console.log(err);
-            })
-        }
-    }, [])
-
     const searchProduct = (query = '', products) => {
         return products.filter(product => { 
             if(query===''){
@@ -97,12 +109,6 @@ const ProductList = (props) => {
     //panggil API nya cukup sekali saja di awal..
     useEffect(() => {
         console.log('FETCHING PRODUCT FROM DATABASE')
-        axiosInstance.get('/products').then(response => {
-            let products = response.data;
-            dispatch(initProducts({ products: response.data }))
-        }).catch(error => {
-            console.log(error);
-        })
     }, []);
 
     return (

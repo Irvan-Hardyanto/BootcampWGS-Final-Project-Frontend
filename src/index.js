@@ -22,6 +22,7 @@ import cartReducer from './reducers/CartSlice';
 import sessionReducer from './reducers/SessionSlice';
 
 import ProtectedRoute from './components/ProtectedRoute';
+import RegisterProtector from './components/RegisterProtector';
 import storage from 'redux-persist/lib/storage';
 import { persistReducer, persistStore } from 'redux-persist';
 import { PersistGate } from 'redux-persist/integration/react'
@@ -58,7 +59,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/signup",
-        element: <SignUpPage></SignUpPage>
+        element: <RegisterProtector><SignUpPage/></RegisterProtector>
     },
     {
         path: "/login",

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Form } from 'semantic-ui-react';
+import { Button, Form, Message } from 'semantic-ui-react';
 import axios from 'axios';
 import qs from 'qs';
 import { Navigate } from "react-router-dom";
@@ -13,8 +13,7 @@ const BASE_URL = "http://localhost:9000";
 const LoginForm = (props) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [usernameError, setUsernameError] = useState(false);
-    const [passwordError, setPasswordError] = useState(false);
+    const [error,setError]=useState(false);
     const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
     //sebenarnya ini pakenya JWT 
@@ -22,21 +21,27 @@ const LoginForm = (props) => {
 
     const handleUsernameChange = (event) => {
         setUsername(event.target.value);
-        setUsernameError(false);
+        setError(false);
     }
 
     const handlePasswordChange = (event) => {
         setPassword(event.target.value);
-        setPasswordError(false);
+        setError(false);
     }
 
     const setErrorMessage = (param, msg) => {
-        if (param === "userName") {
-            setUsernameError(msg)
-        } else if (param === "password") {
-            setPasswordError(msg)
-        } else {
-            alert(msg);
+        setError(msg);
+    }
+
+    const showErrorMessages=()=>{
+        if(error){
+            return(
+                <Message
+                    negative
+                    attached
+                    content={error}
+                />
+            )
         }
     }
 
@@ -95,15 +100,18 @@ const LoginForm = (props) => {
         }
     } else {
         return (
+            <div>
+            {showErrorMessages()}
             <Form>
                 <Form.Field>
-                    <Form.Input fluid label='Username' placeholder='Insert your username' name="username" type="text" value={username} onChange={handleUsernameChange} error={usernameError}></Form.Input>
+                    <Form.Input fluid label='Username' placeholder='Insert your username' name="username" type="text" value={username} onChange={handleUsernameChange}></Form.Input>
                 </Form.Field>
                 <Form.Field>
-                    <Form.Input label='Password' fluid type="password" name="password" placeholder="Insert your password" value={password} onChange={handlePasswordChange} error={passwordError}></Form.Input>
+                    <Form.Input label='Password' fluid type="password" name="password" placeholder="Insert your password" value={password} onChange={handlePasswordChange}></Form.Input>
                 </Form.Field>
                 <Button onClick={handleFormSubmit} primary type='submit' style={{ width: "100%" }} loading={loading}>Login</Button>
             </Form>
+            </div>
         );
     }
 }

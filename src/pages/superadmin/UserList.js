@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Header, Table, Image, Button, Search, Pagination, Icon, Modal, Message } from 'semantic-ui-react';
+import { Grid, Header, Table, Image, Button, Input, Pagination, Icon, Modal, Message } from 'semantic-ui-react';
 import { useSelector } from "react-redux";
 import axios from 'axios';
 import useTable from '../../hooks/useTable';
@@ -61,7 +61,12 @@ const UserList = (props) => {
         setUsers(users.filter(user => {
             return !(user.id === userId)
         }));
-        axiosInstance.put(`/users?userid=${userId}&role=${role}`)
+        axiosInstance.put(`/users?userid=${userId}&role=${role}`,undefined,{
+            headers: {
+                'user-id': session.userId,
+                'user-role': session.role
+            }
+        })
     }
 
     const openConfirmationModal = (role,userId) => {
@@ -86,11 +91,11 @@ const UserList = (props) => {
     return (
         <Grid verticalAlign='middle' padded style={{ height: "100%" }}>
             <Grid.Row style={{ height: "12%" }}>
-                <Grid.Column width={8}>
+                <Grid.Column width={4}>
                     <Header as='h1'>{props.title}</Header>
                 </Grid.Column>
-                <Grid.Column width={8}>
-                    <Search></Search>
+                <Grid.Column width={12}>
+                    <Input style={{width:'100%'}} icon='search' placeholder='Search Customers by Name...'></Input>
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ padding: "0px", height: "78%" }}>

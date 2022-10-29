@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Header, Table, Image, Button, Search, Pagination, Icon, Modal, Message } from 'semantic-ui-react';
+import { Grid, Header, Table, Image, Button, Input, Pagination, Icon } from 'semantic-ui-react';
 import { useSelector } from "react-redux";
 import axios from 'axios';
 import useTable from '../../hooks/useTable';
@@ -20,14 +20,12 @@ function AdminList(props) {
 
     useEffect(() => {
         //tambahkan request header berupa user id dan role nya
-        let reqHeader = {}
-        if (session.id) {
-            reqHeader.headers = {
-                'user-id': session.id,
+        axiosInstance.get('/users?role=2', {
+            headers: {
+                'user-id': session.userId,
                 'user-role': session.role
             }
-        }
-        axiosInstance.get('/users?role=2', reqHeader).then(response => {
+        }).then(response => {
             setAdmins(response.data);
         }).catch(err => {
             console.log(err);
@@ -41,11 +39,11 @@ function AdminList(props) {
     return (
         <Grid verticalAlign='middle' padded style={{ height: "100%" }}>
             <Grid.Row style={{ height: "12%" }}>
-                <Grid.Column width={8}>
+                <Grid.Column width={4}>
                     <Header as='h1'>Admin List</Header>
                 </Grid.Column>
-                <Grid.Column width={8}>
-                    <Search></Search>
+                <Grid.Column width={12}>
+                    <Input style={{width:'100%'}} icon='search' placeholder='Search Admins by Name...'></Input>
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ padding: "0px", height: "78%" }}>

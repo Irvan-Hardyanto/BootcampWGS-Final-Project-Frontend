@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import { Button, Modal, Icon, Form, TextArea, Image, Header } from 'semantic-ui-react';
 import axios from 'axios';
 import { useSelector } from "react-redux";
+import { NumericFormat } from "react-number-format";
 
 const BASE_URL = "http://localhost:9000";
+const PRICE_PREFIX = "Rp. ";
+const PRICE_SUFFIX = ",00";
+const DECIMAL_SEPARATOR = ",";
+const THOUSAND_SEPARATOR= ".";
 
 const AddProductModal = (props) => {
     const [modalAddProductOpen, setModalAddProductOpen] = useState(false);
@@ -61,7 +66,10 @@ const AddProductModal = (props) => {
     }
 
     const handlePriceChange = (event) => {
-        setPrice(event.target.value);
+        //ternyata masih harus manual misahin + ngeparse angkanya...
+        //cara nge parse kayak gini masih ngebug untuk harga diatas Rp.999.999,00
+        const extractedPrice= (event.target.value).replace(PRICE_PREFIX,"").replace(PRICE_SUFFIX,"").replace(".","");
+        setPrice(parseInt(extractedPrice));
         setPriceError(false);
     }
 
@@ -97,6 +105,8 @@ const AddProductModal = (props) => {
         formData.append("stock", stock);
         formData.append("image", image);
         formData.append("unit", unit);
+        //disini id nya belom ada @..@
+        // setProducts([...products,])
         axiosInstance.post('/products', formData, {
             headers: {
                 'user-id': session.userId,
@@ -153,10 +163,20 @@ const AddProductModal = (props) => {
                             onChange={handleDescriptionChange}
                             error={descriptionError}
                         />
-                        <Form.Group widths='equal'>
-                            <Form.Input label="Product Price" type="number" placeholder="Insert Product Price" value={price} onChange={handlePriceChange} error={priceError}></Form.Input>
-                            <Form.Input readOnly label="Preview Price" style={{ color: "black" }} type="text" value={`Rp. ${price.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}></Form.Input>
-                        </Form.Group>
+                        <Form.Field error={priceError}>
+                            <label>Product Price</label>
+                            <NumericFormat 
+                            prefix={PRICE_PREFIX}
+                            suffix={PRICE_SUFFIX}
+                            type="text"
+                            decimalSeparator={DECIMAL_SEPARATOR}
+                            thousandSeparator={THOUSAND_SEPARATOR}
+                            allowNegative={false}
+                            value={parseInt(price)} 
+                            onChange={handlePriceChange} 
+                            
+                            />
+                        </Form.Field>
                         <Form.Group widths='equal'>
                             <Form.Input label="Product Quantity" type="number" placeholder="Insert Product Quantity" value={stock} onChange={handleStockChange} error={stockError}></Form.Input>
                             <Form.Input label="Units" type="text" placeholder="Insert Product unit" value={unit} onChange={handleUnitChange} error={unitError}></Form.Input>

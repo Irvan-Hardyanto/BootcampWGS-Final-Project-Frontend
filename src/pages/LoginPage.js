@@ -6,11 +6,6 @@ import { useLocation } from 'react-router-dom';
 
 const LoginPage = (props) => {
     const state=useLocation().state;
-    const showLoginError=()=>{
-        if(state){
-            return <Message negative>{state.msg}</Message>
-        }
-    }
     return (
         <MainLayout columns={1}>
             <Grid.Row centered>
@@ -20,7 +15,7 @@ const LoginPage = (props) => {
                             <Grid.Column>
                                 <Image centered src="./images/logo-plain-nobg.png"></Image>
                                 <h1>LOGIN</h1>
-                                {showLoginError()}
+
                             </Grid.Column>
                         </Grid.Row>
                         <LoginForm></LoginForm>

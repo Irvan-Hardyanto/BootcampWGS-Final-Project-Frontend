@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useRef } from 'react';
 import { Button, Grid, Menu, Input, Header } from 'semantic-ui-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
@@ -13,6 +13,7 @@ const LandingPage = (props) => {
     const [searchQuery, setSearchQuery] = useState('')
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const initialRender = useRef(true);
 
     const handleMenuItemClicked = (e, { name }) => {
         if (name != "Products" && !session.userId) {
@@ -22,11 +23,11 @@ const LandingPage = (props) => {
     }
     const showMainContent = () => {
         if (activeMenu === 'Products') {
-            return <ProductList searchQuery={searchQuery} />
+            return <ProductList initialRender={initialRender} searchQuery={searchQuery} />
         }
     }
     const handleSearchBarInput = (event) => {
-        console.log('search bar value is changed...')
+        // console.log('search bar value is changed...')
         setSearchQuery(event.target.value);
     }
 
@@ -34,7 +35,7 @@ const LandingPage = (props) => {
         if (activeMenu === 'Products' || activeMenu === "Cart" || activeMenu === "Purchase History") {
             return (
                 <Menu.Item style={{ width: '30%' }}>
-                    <Input className='icon' icon='search' placeholder='Search...' onChange={handleSearchBarInput} />
+                    <Input className='icon' icon='search' placeholder='Search Product(s) by name...' onChange={handleSearchBarInput} />
                 </Menu.Item>
             )
         }
@@ -82,11 +83,11 @@ const LandingPage = (props) => {
                             onClick={handleMenuItemClicked}
                         />
                     </Link>
-                    <Menu.Item
+                    {/* <Menu.Item
                         name="Purchase History"
                         active={activeMenu === "Purchase History"}
                         onClick={handleMenuItemClicked}
-                    />
+                    /> */}
                     {/* Search bar */}
                     {showSearchBar()}
                     <Menu.Menu position='right'>

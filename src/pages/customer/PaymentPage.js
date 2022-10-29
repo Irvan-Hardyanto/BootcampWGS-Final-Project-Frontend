@@ -82,6 +82,9 @@ function PaymentPage(props) {
                 }
             }).then(response=>{
                 setLoading(false);
+
+                
+                
                 setPaymentCompleted(true);//untuk redirect ke halaman detail produk
                 //kasih konfirmasi kalau pembayaran berhasil.
             }).catch(err=>{
