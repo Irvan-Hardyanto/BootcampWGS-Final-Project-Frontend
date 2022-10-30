@@ -23,7 +23,7 @@ function SellingList(props) {
     //range array yang berisi jumlah 'row' di setiap halaman
     const { slice, range }= useTable(filteredSellingData,activePage,ROWS_PER_PAGE)
     useEffect(() => {
-        axiosInstance.get('/sellings',{
+        axiosInstance.get('/sellings?orderby=createdAt&order=DESC',{
             headers:{
                 'user-id': session.userId,
                 'user-role': session.role,
