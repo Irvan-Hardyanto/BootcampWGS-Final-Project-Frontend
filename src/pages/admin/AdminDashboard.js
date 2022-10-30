@@ -11,7 +11,7 @@ import logOut from '../../utils/LogOut';
 import { useDispatch, useSelector } from "react-redux";
 
 function AdminDashboard(props) {
-    const [clickedMenu, setClickedMenu] = useState('');
+    const [clickedMenu, setClickedMenu] = useState('products');
     const dispatch = useDispatch();
     const session = useSelector((state) => state.session);
 
@@ -23,7 +23,6 @@ function AdminDashboard(props) {
         } else if (clickedMenu === 'products') {
             return <ProductList />;
         } else if (clickedMenu.includes("sellinglist")) {
-            let groupby = 'none';
             if (clickedMenu === 'sellinglist/all') {
                 return <SellingList/>;
             }else if (clickedMenu === 'sellinglist/product') {

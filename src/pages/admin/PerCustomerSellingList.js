@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Table, Pagination, Header, Search, Input } from 'semantic-ui-react';
-import * as format from 'date-format';
+import { Grid, Table, Pagination, Header, Input, Modal, Button } from 'semantic-ui-react';
 import axios from 'axios';
 import useTable from '../../hooks/useTable';
 import { useSelector } from "react-redux";
 
 const BASE_URL = "http://localhost:9000";
-const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
 
 //Ini harusnya dipisah ke satu berkas sih, cuma udah mepet deadline
 const axiosInstance = axios.create({
@@ -17,10 +15,13 @@ function PerCustomerSellingList(props) {
 	const session = useSelector((state) => state.session);
     const ROWS_PER_PAGE = 9;
     const [sellingData, setSellingData] = useState([]);
+    const [customerPurchaseData, setCustomerPurchaseData] = useState([]);
      const [filteredSellingData, setFilteredSellingData] = useState([]);
 
     const [activePage, setActivePage] = useState(1);
     const { slice, range }= useTable(filteredSellingData,activePage,ROWS_PER_PAGE);
+
+    const [open,setOpen]=useState(false);
 
     useEffect(()=>{
     	axiosInstance.get('/sellings?groupby=customer',{
@@ -53,6 +54,19 @@ function PerCustomerSellingList(props) {
     const handleSearchBarInput = (event) => {
         setFilteredSellingData(searchSellingList(event.target.value,sellingData));
     }
+    const getCustomerPurchasedProducts = (customerId)=>{
+        setOpen(true);
+        axiosInstance.get(`/sellings?userid=${customerId}`,{
+            headers:{
+                'user-id': session.userId,
+                'user-role': session.role,
+            }
+        }).then(response => {
+            setCustomerPurchaseData(response.data);
+        }).catch(err => {
+            console.log(err);
+        })
+    }
 
     return(
     	<Grid padded style={{ height: "100%" }}>
@@ -77,7 +91,7 @@ function PerCustomerSellingList(props) {
                     <Table.Body>
                         {slice.map((row,idx)=>{
                 			return(
-                    			<Table.Row key={idx}>
+                    			<Table.Row key={idx} onClick={()=>getCustomerPurchasedProducts(row.customerId)}>
                         			<Table.Cell>{row.customerId}</Table.Cell>
                         			<Table.Cell>{row.name}</Table.Cell>
                         			<Table.Cell>{row.totBuy}</Table.Cell>
@@ -91,6 +105,38 @@ function PerCustomerSellingList(props) {
             <Grid.Row style={{ height: '10%', paddingBottom: "0px" }}>
                 <Pagination defaultActivePage={1} totalPages={range.length}  onPageChange={handlePageChange} />
             </Grid.Row>
+            <Modal
+      onClose={() => setOpen(false)}
+      onOpen={() => setOpen(true)}
+      open={open}
+      >
+      <Modal.Header>Products Purchased by This Customer</Modal.Header>
+      <Modal.Content>
+        <Table>
+            <Table.Header>
+                <Table.Row>
+                    <Table.HeaderCell>Product Name</Table.HeaderCell>
+                    <Table.HeaderCell>Purchased Quantity</Table.HeaderCell>
+                </Table.Row>
+            </Table.Header>
+            <Table.Body>
+                {customerPurchaseData.map((row,idx)=>{
+                    return(
+                        <Table.Row>
+                            <Table.Cell>{row.productName}</Table.Cell>
+                            <Table.Cell>{row.totPurchased}</Table.Cell>
+                        </Table.Row>
+                    )
+                })}
+            </Table.Body>
+        </Table>
+      </Modal.Content>
+      <Modal.Actions>
+        <Button color='green' onClick={() => setOpen(false)}>
+          Close
+        </Button>
+      </Modal.Actions>
+    </Modal>
 		</Grid>
     )
 }

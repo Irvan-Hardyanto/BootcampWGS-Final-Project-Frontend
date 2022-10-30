@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Modal, Image, Grid, Message, Header, Icon, Label } from 'semantic-ui-react';
 import NumberInput from 'semantic-ui-react-numberinput';
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { addProduct } from "../reducers/CartSlice.js";
 

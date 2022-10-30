@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Table, Pagination, Header, Search, Input } from 'semantic-ui-react';
-import * as format from 'date-format';
+import { Grid, Table, Pagination, Header, Input } from 'semantic-ui-react';
 import axios from 'axios';
 import useTable from '../../hooks/useTable';
 import { useSelector } from "react-redux";
 
 const BASE_URL = "http://localhost:9000";
-const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
 
 //Ini harusnya dipisah ke satu berkas sih, cuma udah mepet deadline
 const axiosInstance = axios.create({

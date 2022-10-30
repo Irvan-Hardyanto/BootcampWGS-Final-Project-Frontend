@@ -1,8 +1,9 @@
 import React, { useState} from "react";
 import { Container, Grid, Header, Message, Image, List, Button } from 'semantic-ui-react';
-import { useLocation, Navigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FileUploader } from "react-drag-drop-files";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { removeProduct } from "../../reducers/CartSlice.js";
 import axios from "axios";
 
 const BASE_URL = "http://localhost:9000";
@@ -13,10 +14,11 @@ const axiosInstance = axios.create({
 
 ///checkout sama payment sebenernya bisa ngambil dari 'store' nya cart
 function PaymentPage(props) {
-    const session = useSelector((state) => state.session)
-    const [paymentCompleted,setPaymentCompleted]=useState(false);
+    const session = useSelector((state) => state.session);
     const [loading,setLoading]=useState(false);
     const order = useLocation().state;
+    const dispatch=useDispatch();
+    const navigate=useNavigate();
     // console.log(order);
     const countTotalPrice=(order)=>{
         let totalPrice = 0;
@@ -55,6 +57,13 @@ function PaymentPage(props) {
     const handleSizeError = (event)=>{
         alert(`Picture size too large! maximum image size is ${MAX_IMAGE_SIZE} MB!`);
     }
+
+    const deleteItemsFromCart= (items)=>{
+        for(let item of items){
+            dispatch(removeProduct({id: parseInt(item.id)}))
+        }
+    }
+
     const handleSubmit = (event)=>{
         if(!paymentConfirmation){
             //tampilkan pesan error
@@ -69,8 +78,6 @@ function PaymentPage(props) {
             formData.append("items",JSON.stringify(formatOrder(order)));
             formData.append("nominal",countTotalPrice(order));
             formData.append("paymentConfirmation",paymentConfirmation);
-            console.log('appending form data done!');
-            console.log('formData, in JSON format are:'+JSON.stringify(formData));
             for (const [key, value] of Object.entries(formData)) {
                 console.log(`${key}: ${value}`);
               }
@@ -82,19 +89,13 @@ function PaymentPage(props) {
                 }
             }).then(response=>{
                 setLoading(false);
-
-                
-                
-                setPaymentCompleted(true);//untuk redirect ke halaman detail produk
-                //kasih konfirmasi kalau pembayaran berhasil.
+                deleteItemsFromCart(order);
+                navigate('/products');
             }).catch(err=>{
                 setLoading(false);
                 console.log(err);
             })
         }
-    }
-    if(paymentCompleted){
-        return <Navigate to='/products'/>
     }
     return (
         <Container style={{ backgroundColor: "white", height: "100%" }}>

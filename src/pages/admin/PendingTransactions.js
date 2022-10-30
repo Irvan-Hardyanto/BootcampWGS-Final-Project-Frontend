@@ -70,6 +70,13 @@ function PendingTransactions(props) {
                 'user-role': session.role,
             }
         }).then(response => {
+            //hapus dari tampilan pengguna
+            setPendingTransactions(pendingTransactions.filter(transaction=>{
+                return !(transaction.id===paymentId)
+            }))
+            setFilteredPendingTransactions(pendingTransactions.filter(transaction=>{
+                return !(transaction.id===paymentId)
+            }))
             //POST ke tabel Selling
             return axiosInstance.post('/sellings', qs.stringify({ items: items }), {
                 headers: { 'content-type': 'application/x-www-form-urlencoded' }
@@ -154,7 +161,7 @@ function PendingTransactions(props) {
                                     <Table.Cell collapsing>{format.asString(DATE_FORMAT, new Date(row.updatedAt))}</Table.Cell>
                                     {/* <Table.Cell>{row.items}</Table.Cell> */}
                                     <Table.Cell collapsing>{`Rp. ${row.nominal.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Table.Cell>
-                                    <Table.Cell><Button onClick={() => openConfirmationModal(row.items, row.id,row.name)} color='blue'>View Payment Confirmation</Button></Table.Cell>
+                                    <Table.Cell><Button onClick={() => openConfirmationModal(row.items, parseInt(row.id),row.name)} color='blue'>View Payment Confirmation</Button></Table.Cell>
                                 </Table.Row>
                             )
                         })}

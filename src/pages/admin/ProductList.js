@@ -111,11 +111,12 @@ const ProductList = (props) => {
                                                         </List.Content>
                                                     </Grid.Column>
                                                     <Grid.Column width={4}>
-                                                        <Button.Group size='large'>
+                                                        <Button color="blue" size='large' onClick={()=>toggleEditProductModal(product)}>Edit</Button>
+                                                        {/*<Button.Group size='large'>
                                                             <Button color="blue" onClick={()=>toggleEditProductModal(product)}>Edit</Button>
                                                             <Button.Or />
                                                             <Button color="red">Delete</Button>
-                                                        </Button.Group>
+                                                        </Button.Group>*/}
                                                     </Grid.Column>
                                                 </Grid.Row>
                                             </Grid>

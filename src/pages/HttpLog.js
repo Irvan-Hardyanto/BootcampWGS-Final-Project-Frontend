@@ -115,7 +115,7 @@ function HttpLog(props) {
                     <Header as='h1'>HTTP Logs</Header>
                 </Grid.Column>
                 <Grid.Column width={9}>
-                    <Input style={{width:'100%'}} className='icon' icon='search' placeholder='Search...' onChange={handleSearchBarInput} />
+                    <Input style={{width:'100%'}} className='icon' icon='search' placeholder='Search by method or url or status code or timestamp...' onChange={handleSearchBarInput} />
                 </Grid.Column>
                 <Grid.Column width={4}>
                     <CSVLink filename="http-logs" data={csvData}>

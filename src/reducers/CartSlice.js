@@ -56,10 +56,14 @@ export const cartSlice=createSlice({
                 return !(product.id===action.payload.id)
             })
         },
-        emptyCart: (state,action)=>{
+        removeChecked: (state,action)=>{
+            state.value=state.value.filter((product)=>{
+                return !(product.checked)
+            })
+        },emptyCart: (state,action)=>{
             state.value=[];
         }
     }
 })
-export const {addProducts,addProduct,removeProduct,checkAllProduct,uncheckAllProduct,checkProduct,uncheckProduct,editPurchaseQuantity,emptyCart} = cartSlice.actions;
+export const {addProducts,addProduct,removeProduct,checkAllProduct,uncheckAllProduct,checkProduct,uncheckProduct,editPurchaseQuantity,emptyCart,removeChecked} = cartSlice.actions;
 export default cartSlice.reducer;

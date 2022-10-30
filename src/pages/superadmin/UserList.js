@@ -14,11 +14,12 @@ const axiosInstance = axios.create({
 const UserList = (props) => {
     const ROWS_PER_PAGE = 6;
     const [users, setUsers] = useState([]);
+    const [filteredUsers,setFilteredUsers] =useState([]);
     const [activePage, setActivePage] = useState(1);
     const [modalContent, setModalContent] = useState('');
     const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const { slice, range } = useTable(users, activePage, ROWS_PER_PAGE);
+    const { slice, range } = useTable(filteredUsers, activePage, ROWS_PER_PAGE);
     const session = useSelector((state) => state.session);
     const [userId,setUserId]=useState(0);
     const [newRole,setNewRole]=useState(0);
@@ -31,6 +32,7 @@ const UserList = (props) => {
             }
         }).then(response => {
             setUsers(response.data);
+            setFilteredUsers(response.data);
         }).catch(err => {
             console.log(err);
         })
@@ -88,6 +90,30 @@ const UserList = (props) => {
         setConfirmationModalOpen(false);
     }
 
+    const openDeleteModal = (userId)=>{
+        setDeleteModalOpen(true);
+        setUserId(userId);
+    }
+
+    const handleSearchBarInput = (event) => {
+        const query = event.target.value.toLowerCase();
+        setFilteredUsers(users.filter(user => {
+            if (query === '') {
+                return user
+            } else {
+                console.log('query is: '+query)
+                console.log('user is: ');
+                for (const [key, value] of Object.entries(user)) {
+                    console.log(`${key}: ${value}`);
+                }
+                return user.name.toLowerCase().includes(query) ||
+                    (user.email && user.email.toLowerCase().includes(query))||
+                    (user.mobile && user.mobile.toLowerCase().includes(query))||
+                    user.userName.toLowerCase().includes(query)
+            }
+        }))
+    }
+
     return (
         <Grid verticalAlign='middle' padded style={{ height: "100%" }}>
             <Grid.Row style={{ height: "12%" }}>
@@ -95,7 +121,7 @@ const UserList = (props) => {
                     <Header as='h1'>{props.title}</Header>
                 </Grid.Column>
                 <Grid.Column width={12}>
-                    <Input style={{width:'100%'}} icon='search' placeholder='Search Customers by Name...'></Input>
+                    <Input style={{width:'100%'}} icon='search' placeholder='Search Customers by Name...' onChange={handleSearchBarInput}></Input>
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ padding: "0px", height: "78%" }}>
@@ -125,11 +151,12 @@ const UserList = (props) => {
                                     <Table.Cell>{user.userName}</Table.Cell>
                                     {/* <Table.Cell>{customer.password}</Table.Cell> */}
                                     <Table.Cell>
-                                        <Button.Group>
+                                        <Button primary onClick={() => openConfirmationModal(parseInt(user.role),parseInt(user.id))}>{user.role == 3 ? 'Elect As Admin' : 'De-elect from admin'}</Button>
+                                        {/*<Button.Group>
                                             <Button primary onClick={() => openConfirmationModal(parseInt(user.role),parseInt(user.id))}>{user.role == 3 ? 'Elect As Admin' : 'De-elect from admin'}</Button>
                                             <Button.Or />
-                                            <Button negative onClick={()=> setDeleteModalOpen(true)}>Delete</Button>
-                                        </Button.Group>
+                                            <Button negative onClick={()=> openDeleteModal(parseInt(user.id))}>Delete</Button>
+                                        </Button.Group>*/}
                                     </Table.Cell>
                                 </Table.Row>
                             )
@@ -173,7 +200,11 @@ const UserList = (props) => {
                     <Button negative onClick={()=>setDeleteModalOpen(false)}>
                         No
                     </Button>
-                    <Button positive onClick={()=>deleteUser(userId)}>
+                    <Button positive onClick={()=>{
+                        console.log('selected user id is: '+userId);
+                        // deleteUser(userId)
+                        setDeleteModalOpen(false);
+                    }}>
                         Yes
                     </Button>
                 </Modal.Actions>

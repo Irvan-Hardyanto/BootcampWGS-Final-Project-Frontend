@@ -71,11 +71,12 @@ function AdminList(props) {
                                     <Table.Cell>{admin.userName}</Table.Cell>
                                     {/* <Table.Cell>{customer.password}</Table.Cell> */}
                                     <Table.Cell>
-                                        <Button.Group>
+                                        <Button primary>De-elect to Customer</Button>
+                                        {/*<Button.Group>
                                             <Button primary>De-elect to Customer</Button>
                                             <Button.Or />
                                             <Button negative>Delete</Button>
-                                        </Button.Group>
+                                        </Button.Group>*/}
                                     </Table.Cell>
                                 </Table.Row>
                             )
