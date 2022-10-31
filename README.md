@@ -1,8 +1,35 @@
-# Getting Started with Create React App
+# Final Project WGS Bootcamp Batch 3 - Backend Side
+## App Name
+Sales application
+
+## Library  Used
+1. React JS
+2. Axios
+3. React-redux
+4. React-redux-persist
+5. Semantic ui React
+
+## Features
+### For Customer
+1. Product List
+2. Direct Buy or Via Cart
+
+### For Admin
+1. Selling List
+2. Product List
+3. Transactions List
+4. Http Log, can be downloaded to .csv file
+
+### For Superadmin
+1. Customer list
+2. Admin List
+3. Http Log
+
+## Additional Informations
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+### Available Scripts
 
 In the project directory, you can run:
 
