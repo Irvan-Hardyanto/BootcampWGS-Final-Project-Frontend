@@ -1,4 +1,4 @@
-# Final Project WGS Bootcamp Batch 3 - Backend Side
+# Final Project WGS Bootcamp Batch 3 - Frontend Side
 ## App Name
 Sales application
 
