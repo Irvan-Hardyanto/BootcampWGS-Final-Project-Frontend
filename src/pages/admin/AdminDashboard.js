@@ -11,7 +11,7 @@ import logOut from '../../utils/LogOut';
 import { useDispatch, useSelector } from "react-redux";
 
 function AdminDashboard(props) {
-    const [clickedMenu, setClickedMenu] = useState('products');
+    const [clickedMenu, setClickedMenu] = useState('http_logs');
     const dispatch = useDispatch();
     const session = useSelector((state) => state.session);
 

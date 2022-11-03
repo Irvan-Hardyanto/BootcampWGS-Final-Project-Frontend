@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Header, Table, Pagination, Label, Button, Icon, Input } from 'semantic-ui-react';
 import * as format from 'date-format';
 import axios from 'axios';
-import useTable from '../hooks/useTable';
-import { CSVLink } from "react-csv";
 import _ from 'lodash';
 import { useSelector } from "react-redux";
+import PaginationBar from "../components/PaginationBar";
 
 const BASE_URL = "http://localhost:9000";
 const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
-const LOG_FIELDS = ['logId', 'userId', 'timestamp', 'role', 'sourceIP', 'method', 'url', 'statusCode', 'responseTime', 'totalTime'];
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
@@ -41,70 +39,48 @@ const formatStatusCode = (statusCode) => {
     }
 }
 
-//kalau mau lebih rapih lagi, filter log nya di backend, pake WHERE method LIKE ... OR status LIKE ...
 function HttpLog(props) {
     const ROWS_PER_PAGE = 8;
-    const [activePage, setActivePage] = useState(1);
+    const [activePage, setActivePage] = useState(0);
     const [log, setLog] = useState([]);//data log yang apa adanya dari database
-    const [filteredLog,setFilteredLog] = useState([]);//data log yang sudah di-filter berdasarkan kueri tertentu
-    const { slice, range } = useTable(filteredLog, activePage, ROWS_PER_PAGE);
-    const [csvData, setCsvData] = useState([]);
+    const [totalRows, setTotalRows] =useState(0);
+    const [totalPage,setTotalPage] = useState(0)
+    // const [csvData, setCsvData] = useState([]);
     const [searchQuery, setSearchQuery] = useState('')
     const session = useSelector((state) => state.session);
 
-    const formatLogToCSV = (logs) => {
-        let csvData = [];
-        csvData.push(LOG_FIELDS);
-        console.log('csv Data header is: '+csvData);
-        //header csv nya
-
-        //isi dari csv nya
-        for (let log of logs) {
-            csvData.push(_.values(log));
-        }
-        return csvData;
+    const getLogs=()=>{
+        axiosInstance.get(`/logs?search_query=${searchQuery}&page=${activePage}&limit=${ROWS_PER_PAGE}`).then(response=>{
+            setLog(response.data.result);
+            setActivePage(parseInt(response.data.page));
+            setTotalPage(parseInt(response.data.totalPage))
+        })
     }
 
-    useEffect(() => {
-        axiosInstance.get('/logs',{
+    useEffect(()=>{
+        getLogs();
+    },[activePage,searchQuery])
+
+    const handlePageChange = ({selected}) => {
+        setActivePage(selected);
+    }
+    const handleSearchBarInput = (event) => {
+        setSearchQuery((event.target.value).toLowerCase());
+    }
+
+    //https://stackoverflow.com/a/57788656
+    const handleBtnDownloadClicked = ()=>{
+        axiosInstance.get('/logs/download',{
             headers:{
                 'user-id': session.userId,
                 'user-role': session.role,
             }
-        }).then(response => {
-            setCsvData(formatLogToCSV(response.data));
-            setLog(response.data);
-            setFilteredLog(response.data);
-        }).catch(err => {
-            console.log(err);
-        })
-    }, [])
-
-    const handlePageChange = (event, data) => {
-        setActivePage(data.activePage);
-    }
-    const handleSearchBarInput = (event) => {
-        // console.log('search bar value is changed...')
-        // setSearchQuery(event.target.value);
-        setFilteredLog(searchLog(event.target.value,log));
-    }
-
-    const searchLog = (query = '', logs) => {
-        
-        return logs.filter(log => { 
-            query=query.toLowerCase();
- 
-            if(query===''){
-                return log
-            }else{
-                // search by method/date/statuscode/path/url???
-                
-                return log.url.toLowerCase().includes(query)||
-                log.method.toLowerCase().includes(query)||
-                log.statusCode.toString().toLowerCase().includes(query) ||
-                format.asString(DATE_FORMAT, new Date(log.timestamp)).toString().includes(query)
-  
-            }
+        }).then(response=>{
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(response.data);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'output.csv';
+            hiddenElement.click();
         })
     }
 
@@ -118,20 +94,16 @@ function HttpLog(props) {
                     <Input style={{width:'100%'}} className='icon' icon='search' placeholder='Search by method or url or status code or timestamp...' onChange={handleSearchBarInput} />
                 </Grid.Column>
                 <Grid.Column width={4}>
-                    <CSVLink filename="http-logs" data={csvData}>
-                        <Button icon labelPosition='left' primary>
-                            <Icon name='download' />
+                    <Button icon labelPosition='left' primary onClick={handleBtnDownloadClicked}>
+                        <Icon name='download' />
                             Download as .csv File
-                        </Button>
-                    </CSVLink>
-
+                    </Button>
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ padding: "0px", height: "78%" }}>
-                <Table celled>
+                <Table celled compact>
                     <Table.Header>
                         <Table.Row textAlign='center'>
-                            <Table.HeaderCell>No.</Table.HeaderCell>
                             <Table.HeaderCell>Timestamp</Table.HeaderCell>
                             <Table.HeaderCell>User ID</Table.HeaderCell>
                             <Table.HeaderCell>Role</Table.HeaderCell>
@@ -144,27 +116,28 @@ function HttpLog(props) {
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                        {searchLog(searchQuery,slice).map((row, idx) => {
+                        {log.map((row, idx) => {
                             return (
                                 <Table.Row key={row.logId} textAlign='center'>
-                                    <Table.Cell>{((activePage - 1) * ROWS_PER_PAGE) + idx + 1}</Table.Cell>
-                                    <Table.Cell>{format.asString(DATE_FORMAT, new Date(row.timestamp))}</Table.Cell>
-                                    <Table.Cell>{row.userId}</Table.Cell>
-                                    <Table.Cell>{row.role}</Table.Cell>
+                                    <Table.Cell width={3}>{format.asString(DATE_FORMAT, new Date(row.timestamp))}</Table.Cell>
+                                    <Table.Cell width={1}>{row.userId}</Table.Cell>
+                                    <Table.Cell width={1}>{row.role}</Table.Cell>
                                     <Table.Cell>{row.sourceIP}</Table.Cell>
-                                    <Table.Cell>{row.url}</Table.Cell>
+                                    <Table.Cell width={3}>{row.url}</Table.Cell>
                                     <Table.Cell>{formatMethod(row.method)}</Table.Cell>
-                                    <Table.Cell>{formatStatusCode(row.statusCode)}</Table.Cell>
-                                    <Table.Cell>{row.responseTime}</Table.Cell>
-                                    <Table.Cell>{row.totalTime}</Table.Cell>
+                                    <Table.Cell width={1}>{formatStatusCode(row.statusCode)}</Table.Cell>
+                                    <Table.Cell width={1}>{row.responseTime}</Table.Cell>
+                                    <Table.Cell width={1}>{row.totalTime}</Table.Cell>
                                 </Table.Row>
                             )
                         })}
                     </Table.Body>
                 </Table>
             </Grid.Row>
-            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }}>
-                <Pagination defaultActivePage={1} totalPages={range.length} onPageChange={handlePageChange} />
+            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }} centered>
+                <Grid.Column textAlign='center'>
+                    <PaginationBar totalPage={totalPage} handlePageChange={handlePageChange}/>
+                </Grid.Column>    
             </Grid.Row>
         </Grid>
     );
