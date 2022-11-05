@@ -50,7 +50,7 @@ function HttpLog(props) {
     const session = useSelector((state) => state.session);
 
     const getLogs=()=>{
-        axiosInstance.get(`/logs?search_query=${searchQuery}&page=${activePage}&limit=${ROWS_PER_PAGE}`).then(response=>{
+        axiosInstance.get(`/logs?search-query=${searchQuery}&page=${activePage}&limit=${ROWS_PER_PAGE}`).then(response=>{
             setLog(response.data.result);
             setActivePage(parseInt(response.data.page));
             setTotalPage(parseInt(response.data.totalPage))

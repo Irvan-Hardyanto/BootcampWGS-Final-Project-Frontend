@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Table, Pagination, Header, Search, Input } from 'semantic-ui-react';
 import * as format from 'date-format';
 import axios from 'axios';
-import useTable from '../../hooks/useTable';
 import { useSelector } from "react-redux";
+import PaginationBar from "../../components/PaginationBar";
 
 const BASE_URL = "http://localhost:9000";
 const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
@@ -17,28 +17,30 @@ function SellingList(props) {
     const session = useSelector((state) => state.session);
     const ROWS_PER_PAGE = 9;
     const [sellingData, setSellingData] = useState([]);//'data'  itu sellingData
-    const [filteredSellingData, setFilteredSellingData] = useState([]);//'data'  itu sellingData
-    const [activePage, setActivePage] = useState(1);
-    //slice itu data yang udah dipisah pisah
-    //range array yang berisi jumlah 'row' di setiap halaman
-    const { slice, range }= useTable(filteredSellingData,activePage,ROWS_PER_PAGE)
+    const [activePage, setActivePage] = useState(0);
+    const [totalRows, setTotalRows] =useState(0);
+    const [totalPage,setTotalPage] = useState(0)
+    const [searchQuery, setSearchQuery] = useState('')
+
     useEffect(() => {
-        axiosInstance.get('/sellings?orderby=createdAt&order=DESC',{
+        axiosInstance.get(`/sellings?orderby=createdAt&order=DESC&search-query=${searchQuery}&page=${activePage}&limit=${ROWS_PER_PAGE}`,{
             headers:{
                 'user-id': session.userId,
                 'user-role': session.role,
             }
         }).then(response => {
-            setSellingData(response.data)
-            setFilteredSellingData(response.data)
+            setSellingData(response.data.result);
+            setTotalRows(response.data.totalRows);
+            setActivePage(parseInt(response.data.page));
+            setTotalPage(parseInt(response.data.totalPage));
         }).catch(err => {
             console.log(err);
         })
         
-    }, []);
+    }, [searchQuery,activePage]);
 
-    const handlePageChange = (event, data) => {
-        setActivePage(data.activePage);
+    const handlePageChange = ({selected}) => {
+        setActivePage(selected);
     }
 
     const searchSellingList = (query = '', sellings) => {
@@ -52,7 +54,7 @@ function SellingList(props) {
         })
     }
     const handleSearchBarInput = (event) => {
-        setFilteredSellingData(searchSellingList(event.target.value,sellingData));
+        setSearchQuery(event.target.value.toLowerCase());
     }
 
     return (
@@ -66,7 +68,7 @@ function SellingList(props) {
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ height: '78%', padding: "0px" }}>
-                <Table celled selectable>
+                <Table celled selectable compact>
                     <Table.Header>
                         <Table.Row>
                             <Table.HeaderCell>Payment Id</Table.HeaderCell>
@@ -78,7 +80,7 @@ function SellingList(props) {
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                        {slice.map((row, idx) => {
+                        {sellingData.map((row, idx) => {
                             return (
                                 <Table.Row key={idx}>
                                     <Table.Cell>{row.paymentId}</Table.Cell>
@@ -93,8 +95,10 @@ function SellingList(props) {
                     </Table.Body>
                 </Table>
             </Grid.Row>
-            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }}>
-                <Pagination defaultActivePage={1} totalPages={range.length}  onPageChange={handlePageChange} />
+            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }} centered>
+                <Grid.Column textAlign='center'>
+                    <PaginationBar totalPage={totalPage}  handlePageChange={handlePageChange} />
+                </Grid.Column>
             </Grid.Row>
         </Grid>
     );

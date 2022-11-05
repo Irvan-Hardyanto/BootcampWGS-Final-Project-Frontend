@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Table, Pagination, Header, Modal, Button, Input } from 'semantic-ui-react';
+import { Grid, Table, Pagination, Header, Modal, Button, Input, Icon } from 'semantic-ui-react';
 import * as format from 'date-format';
 import axios from 'axios';
-import useTable from '../../hooks/useTable';
 import { useSelector } from "react-redux";
+import PaginationBar from "../../components/PaginationBar";
 
 const BASE_URL = "http://localhost:9000";
 const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
@@ -13,34 +13,38 @@ const axiosInstance = axios.create({
 })
 
 function CompletedTransactions(props) {
-    const ROWS_PER_PAGE = 5;
+    const ROWS_PER_PAGE = 6;
     const [activePage, setActivePage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('')
+    const [totalRows, setTotalRows] =useState(0);
+    const [totalPage,setTotalPage] = useState(0)
+
     const [completedTransactions, setCompletedTransactions] = useState([]);
-    const [filteredCompletedTransactions, setFilteredCompletedTransactions] = useState([]);
-    const { slice, range } = useTable(filteredCompletedTransactions, activePage, ROWS_PER_PAGE);
+
     const [modalItemsOpen, setModalItemsOpen] = useState(false);
     const [items, setItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const session = useSelector((state) => state.session);
 
-    useEffect(() => {
-        axiosInstance.get('/payments',{
+    const getCompletedTransactions = ()=>{
+        axiosInstance.get(`/payments?paid=true&search-query=${searchQuery}&page=${activePage}&limit=${ROWS_PER_PAGE}`,{
             headers:{
                 'user-id': session.userId,
                 'user-role': session.role,
             }
         }).then(response => {
-            setFilteredCompletedTransactions(response.data.filter(row => row.paid));
-            setCompletedTransactions(response.data.filter(row => row.paid));
+            setCompletedTransactions(response.data.result);
+            setTotalPage(response.data.totalPage);
         })
-    }, [])
+    }
+    useEffect(() => {
+        getCompletedTransactions()
+    }, [activePage,searchQuery])
 
-    const handlePageChange = (event, data) => {
-        setActivePage(data.activePage);
+    const handlePageChange = ({selected}) => {
+        setActivePage(selected);
     }
     const handleButtonItemsClicked = (items,nominal) => {
-        //parse dulu, baru simpan ke state
-        //bukan di simpan ke state baru di parse -> error
         setItems(JSON.parse(items));
         setTotalPrice(nominal);
         
@@ -48,16 +52,7 @@ function CompletedTransactions(props) {
     }
 
     const handleSearchBarInput = (event) => {
-        const query = event.target.value.toLowerCase();
-        setFilteredCompletedTransactions(completedTransactions.filter(transaction=>{
-            if(query===''){
-                return transaction
-            }else{
-                return transaction.name.toLowerCase().includes(query) ||
-                format.asString(DATE_FORMAT, new Date(transaction.updatedAt)).toString().includes(query)||
-                transaction.nominal.toString()==query
-            }
-        }))
+        setSearchQuery(event.target.value)
     }
 
     return (
@@ -71,7 +66,7 @@ function CompletedTransactions(props) {
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ padding: "0px", height: "78%" }}>
-                <Table celled>
+                <Table celled compact>
                     <Table.Header>
                         <Table.Row>
                             <Table.HeaderCell>No</Table.HeaderCell>
@@ -83,23 +78,25 @@ function CompletedTransactions(props) {
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                        {slice.map((row, idx) => {
+                        {completedTransactions.map((row, idx) => {
                             return (
                                 <Table.Row key={row.id}>
                                     <Table.Cell>{idx + 1}</Table.Cell>
                                     <Table.Cell>{row.id}</Table.Cell>
-                                    <Table.Cell collapsing>{row.name}</Table.Cell>
-                                    <Table.Cell collapsing>{format.asString(DATE_FORMAT, new Date(row.updatedAt))}</Table.Cell>
+                                    <Table.Cell>{row.name}</Table.Cell>
+                                    <Table.Cell>{format.asString(DATE_FORMAT, new Date(row.updatedAt))}</Table.Cell>
                                     <Table.Cell><Button primary onClick={() => handleButtonItemsClicked(row.items,row.nominal)}>Show Purchased Items</Button></Table.Cell>
-                                    <Table.Cell collapsing>{`Rp. ${row.nominal.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Table.Cell>
+                                    <Table.Cell>{`Rp. ${row.nominal.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Table.Cell>
                                 </Table.Row>
                             )
                         })}
                     </Table.Body>
                 </Table>
             </Grid.Row>
-            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }}>
-                <Pagination defaultActivePage={1} totalPages={range.length} onPageChange={handlePageChange} />
+            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }} centered>
+                <Grid.Column textAlign='center'>
+                    <PaginationBar totalPage={totalPage} handlePageChange={handlePageChange}/>
+                </Grid.Column>      
             </Grid.Row>
             <Modal size='large' open={modalItemsOpen} onClose={() => setModalItemsOpen(false)}>
                 <Modal.Header>Purchased Items</Modal.Header>

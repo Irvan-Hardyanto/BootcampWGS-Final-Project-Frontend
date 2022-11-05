@@ -3,8 +3,8 @@ import { Table, Modal, Message, Button, Image, Pagination, Grid, Header, Input }
 import axios from 'axios';
 import qs from 'qs';
 import * as format from 'date-format';
-import useTable from '../../hooks/useTable';
 import { useSelector } from "react-redux";
+import PaginationBar from "../../components/PaginationBar";
 
 const BASE_URL = "http://localhost:9000";
 const DATE_FORMAT = 'dd-MM-yyyy hh:mm:ss';
@@ -15,14 +15,15 @@ const axiosInstance = axios.create({
 
 function PendingTransactions(props) {
     //untuk pagination
-    const ROWS_PER_PAGE = 5;
+    const ROWS_PER_PAGE = 7;
+
+    const [pendingTransactions, setPendingTransactions] = useState([]);
     
     const [paymentConfModalOpen, setPaymentConfModalOpen] = useState(false);//modal daftar barang yang dibeli + bukti bayarnya
     const [finalModalOpen, setFinalModalOpen] = useState(false);//modal peringatan sebelum tandai transaksinya udah beres
     
     //untuk searching by nominal, tanggal, user id, dll.
-    const [pendingTransactions, setPendingTransactions] = useState([]);
-    const [filteredPendingTransactions, setFilteredPendingTransactions] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('')
     
     //untuk modal konfirmasi transaksi customer
     const [modalItems, setModalItems] = useState([]);
@@ -30,25 +31,32 @@ function PendingTransactions(props) {
     const [selectedCustName, setSelectedCustName] = useState(null);
     
     //untuk pagination
-    const [activePage, setActivePage] = useState(1);
-    const { slice, range } = useTable(filteredPendingTransactions, activePage, ROWS_PER_PAGE);
+    const [activePage, setActivePage] = useState(0);
+    const [totalRows, setTotalRows] =useState(0);
+    const [totalPage,setTotalPage] = useState(0)
     
     const session = useSelector((state) => state.session);
 
-    useEffect(() => {
-        axiosInstance.get('/payments', {
+    const getPendingPayments=()=>{
+        axiosInstance.get(`/payments?paid=false&search-query=${searchQuery}&page=${activePage}&limit=${ROWS_PER_PAGE}`, {
             headers: {
                 'user-id': session.userId,
                 'user-role': session.role,
             }
         }).then(response => {
-            setFilteredPendingTransactions(response.data.filter(row => !row.paid))
-            setPendingTransactions(response.data.filter(row => !row.paid));
+            setPendingTransactions(response.data.result);
+            setActivePage(response.data.page);
+            setTotalPage(response.data.totalPage);
         })
-    }, [])
+    }
 
-    const handlePageChange = (event, data) => {
-        setActivePage(data.activePage);
+    useEffect(() => {
+        getPendingPayments();
+        console.log('searchQuery is: '+searchQuery)
+    }, [activePage,searchQuery])
+
+    const handlePageChange = ({selected}) => {
+        setActivePage(selected);
     }
 
     //buka modal terakhir (yakin tandai transaksi sudah selesai atau belum)
@@ -72,9 +80,6 @@ function PendingTransactions(props) {
         }).then(response => {
             //hapus dari tampilan pengguna
             setPendingTransactions(pendingTransactions.filter(transaction=>{
-                return !(transaction.id===paymentId)
-            }))
-            setFilteredPendingTransactions(pendingTransactions.filter(transaction=>{
                 return !(transaction.id===paymentId)
             }))
             //POST ke tabel Selling
@@ -101,16 +106,7 @@ function PendingTransactions(props) {
     }
 
     const handleSearchBarInput = (event) => {
-        const query = event.target.value.toLowerCase();
-        setFilteredPendingTransactions(pendingTransactions.filter(transaction => {
-            if (query === '') {
-                return transaction
-            } else {
-                console.log('query is: '+query)
-                return transaction.name.toLowerCase().includes(query) ||
-                    format.asString(DATE_FORMAT, new Date(transaction.createdAt)).toString().toLowerCase().includes(query)
-            }
-        }))
+        setSearchQuery(event.target.value)
     }
 
     const countItemsTotalPrice = (items) => {
@@ -132,15 +128,14 @@ function PendingTransactions(props) {
                     <Header as='h1'>Pending Transactions</Header>
                 </Grid.Column>
                 <Grid.Column width={11}>
-                    <Input style={{ width: '100%' }} className='icon' icon='search' placeholder='Search Pending Transactions' onChange={handleSearchBarInput} />
+                    <Input style={{ width: '100%' }} className='icon' icon='search' placeholder='Search Pending Transactions by Customer Name or Nominal...' onChange={handleSearchBarInput} />
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ padding: "0px", height: "78%" }}>
-                <Table celled>
+                <Table celled compact>
                     <Table.Header>
                         <Table.Row>
                             <Table.HeaderCell collapsing>No</Table.HeaderCell>
-                            <Table.HeaderCell collapsing>Transaction Id</Table.HeaderCell>
                             <Table.HeaderCell collapsing>Customer Name</Table.HeaderCell>
                             <Table.HeaderCell collapsing>Created At</Table.HeaderCell>
                             <Table.HeaderCell collapsing>Updated At</Table.HeaderCell>
@@ -151,11 +146,10 @@ function PendingTransactions(props) {
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                        {slice.map((row, idx) => {
+                        {pendingTransactions.map((row, idx) => {
                             return (
                                 <Table.Row key={row.id}>
-                                    <Table.Cell collapsing>{((activePage - 1) * ROWS_PER_PAGE) + idx + 1}</Table.Cell>
-                                    <Table.Cell collapsing>{row.id}</Table.Cell>
+                                    <Table.Cell collapsing>{((activePage) * ROWS_PER_PAGE) + idx + 1}</Table.Cell>
                                     <Table.Cell collapsing>{row.name}</Table.Cell>
                                     <Table.Cell collapsing>{format.asString(DATE_FORMAT, new Date(row.createdAt))}</Table.Cell>
                                     <Table.Cell collapsing>{format.asString(DATE_FORMAT, new Date(row.updatedAt))}</Table.Cell>
@@ -178,7 +172,7 @@ function PendingTransactions(props) {
                                 </Grid.Column>
                                 <Grid.Column width={11}>
                                     <Header as="h5">{`Customer Name: ${selectedCustName}`}</Header>
-                                    <Table celled>
+                                    <Table celled compact>
                                         <Table.Header>
                                             <Table.Row>
                                                 <Table.HeaderCell>Product Id</Table.HeaderCell>
@@ -232,8 +226,10 @@ function PendingTransactions(props) {
                     </Modal>
                 </Modal>
             </Grid.Row>
-            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }}>
-                <Pagination defaultActivePage={1} totalPages={range.length} onPageChange={handlePageChange} />
+            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }} centered>
+                <Grid.Column textAlign='center'>
+                    <PaginationBar totalPage={totalPage} handlePageChange={handlePageChange}/>
+                </Grid.Column>
             </Grid.Row>
         </Grid>
     );

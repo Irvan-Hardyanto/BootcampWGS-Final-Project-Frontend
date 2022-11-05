@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Table, Pagination, Header, Input } from 'semantic-ui-react';
 import axios from 'axios';
-import useTable from '../../hooks/useTable';
 import { useSelector } from "react-redux";
+import PaginationBar from "../../components/PaginationBar";
 
 const BASE_URL = "http://localhost:9000";
 
@@ -15,41 +15,34 @@ function PerProductSellingList(props) {
 	const session = useSelector((state) => state.session);
     const ROWS_PER_PAGE = 9;
     const [sellingData, setSellingData] = useState([]);
-    const [filteredSellingData, setFilteredSellingData] = useState([]);
 
-    const [activePage, setActivePage] = useState(1);
-    const { slice, range }= useTable(filteredSellingData,activePage,ROWS_PER_PAGE)
+    const [activePage, setActivePage] = useState(0);
+    const [totalRows, setTotalRows] =useState(0);
+    const [totalPage,setTotalPage] = useState(0)
+    const [searchQuery,setSearchQuery] = useState('');
 
 	useEffect(()=>{
-		axiosInstance.get('/sellings?groupby=product',{
+		axiosInstance.get(`/sellings?groupby=product&search-query=${searchQuery}&page=${activePage}&limit=${ROWS_PER_PAGE}`,{
                 headers:{
                     'user-id': session.userId,
                     'user-role': session.role,
                 }
         }).then(response => {
-            setSellingData(response.data)
-            setFilteredSellingData(response.data)
+            setSellingData(response.data.result);
+            setActivePage(response.data.page);
+            setTotalPage(response.data.totalPage);
+            setTotalRows(response.data.totalRows);
         }).catch(err => {
             console.log(err);
         })
-	},[])
+	},[activePage,searchQuery])
 
-	const handlePageChange = (event, data) => {
-        setActivePage(data.activePage);
+	const handlePageChange = ({selected}) => {
+        setActivePage(selected);
     }
 
-    const searchSellingList = (query = '', sellings) => {
-        query=query.toLowerCase();
-        return sellings.filter(selling => { 
-            if(query===''){
-                return selling
-            }else{
-                return selling.productName.toLowerCase().includes(query);
-            }
-        })
-    }
     const handleSearchBarInput = (event) => {
-        setFilteredSellingData(searchSellingList(event.target.value,sellingData));
+        setSearchQuery(event.target.value.toLowerCase());
     }
 
 
@@ -64,7 +57,7 @@ function PerProductSellingList(props) {
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ height: '78%', padding: "0px" }}>
-            	<Table celled selectable>
+            	<Table celled selectable compact>
                     <Table.Header>
                         <Table.Row>
                     		<Table.HeaderCell>Product Id</Table.HeaderCell>
@@ -73,7 +66,7 @@ function PerProductSellingList(props) {
                 		</Table.Row>
                     </Table.Header>
                     <Table.Body>
-                        {slice.map((row,idx)=>{
+                        {sellingData.map((row,idx)=>{
                 			return(
                     			<Table.Row key={idx}>
                         			<Table.Cell>{row.productId}</Table.Cell>
@@ -85,8 +78,10 @@ function PerProductSellingList(props) {
                     </Table.Body>
                 </Table>
             </Grid.Row>
-            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }}>
-                <Pagination defaultActivePage={1} totalPages={range.length}  onPageChange={handlePageChange} />
+            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }} centered>
+                <Grid.Column textAlign='center'>
+                    <PaginationBar totalPage={totalPage} handlePageChange={handlePageChange} />
+                </Grid.Column>
             </Grid.Row>
 		</Grid>
      )
