@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Header, Table, Image, Button, Input, Pagination, Icon } from 'semantic-ui-react';
 import { useSelector } from "react-redux";
 import axios from 'axios';
-import useTable from '../../hooks/useTable';
+
 import { faker } from '@faker-js/faker';
 
 const BASE_URL = "http://localhost:9000";
@@ -13,27 +13,37 @@ const axiosInstance = axios.create({
 
 function AdminList(props) {
     const ROWS_PER_PAGE = 6;
+
     const [admins, setAdmins] = useState([]);
     const [activePage, setActivePage] = useState(1);
-    const { slice, range } = useTable(admins, activePage, ROWS_PER_PAGE);
+    const [totalRows, setTotalRows] =useState(0);
+    const [totalPage,setTotalPage] = useState(0)
+    const [searchQuery, setSearchQuery] = useState('');
+
     const session = useSelector((state) => state.session);
 
     useEffect(() => {
         //tambahkan request header berupa user id dan role nya
-        axiosInstance.get('/users?role=2', {
+        axiosInstance.get(`/users?role=2&search-query=${searchQuery}&page=${activePage}&limit=${ROWS_PER_PAGE}`, {
             headers: {
                 'user-id': session.userId,
                 'user-role': session.role
             }
         }).then(response => {
-            setAdmins(response.data);
+            setAdmins(response.data.result);
+            setTotalPage(response.data.totalPage);
+            setTotalRows(response.data.totalRows);
+            setActivePage(response.data.page);
         }).catch(err => {
             console.log(err);
         })
-    }, []);
+    }, [activePage,searchQuery]);
 
-    const handlePageChange = (event, data) => {
-        setActivePage(data.activePage);
+    const handlePageChange = ({selected}) => {
+        setActivePage(selected);
+    }
+    const handleSearchBarInput=(event)=>{
+        setSearchQuery(event.target.value.toLowerCase());
     }
 
     return (
@@ -43,7 +53,7 @@ function AdminList(props) {
                     <Header as='h1'>Admin List</Header>
                 </Grid.Column>
                 <Grid.Column width={12}>
-                    <Input style={{width:'100%'}} icon='search' placeholder='Search Admins by Name...'></Input>
+                    <Input style={{width:'100%'}} icon='search' placeholder='Search Admins by Name...' onChange={handleSearchBarInput}></Input>
                 </Grid.Column>
             </Grid.Row>
             <Grid.Row style={{ padding: "0px", height: "78%" }}>
@@ -60,7 +70,7 @@ function AdminList(props) {
                         </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                        {slice.map((admin, idx) => {
+                        {admins.map((admin, idx) => {
                             return (
                                 <Table.Row key={admin.id}>
                                     <Table.Cell> {admin.id}</Table.Cell>

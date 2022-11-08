@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Table, Pagination, Header, Modal, Button, Input, Icon } from 'semantic-ui-react';
+import { Grid, Table, Pagination, Header, Modal, Button, Input, Icon, Message } from 'semantic-ui-react';
 import * as format from 'date-format';
 import axios from 'axios';
+import qs from 'qs';
 import { useSelector } from "react-redux";
 import PaginationBar from "../../components/PaginationBar";
 
@@ -14,7 +15,7 @@ const axiosInstance = axios.create({
 
 function CompletedTransactions(props) {
     const ROWS_PER_PAGE = 6;
-    const [activePage, setActivePage] = useState(1);
+    const [activePage, setActivePage] = useState(0);
     const [searchQuery, setSearchQuery] = useState('')
     const [totalRows, setTotalRows] =useState(0);
     const [totalPage,setTotalPage] = useState(0)
@@ -22,6 +23,9 @@ function CompletedTransactions(props) {
     const [completedTransactions, setCompletedTransactions] = useState([]);
 
     const [modalItemsOpen, setModalItemsOpen] = useState(false);
+    const [confirmationModalOpen,setConfirmationModalOpen] = useState(false);
+    const [paymentId,setPaymentId] = useState(0);
+    const [undoLoading,setUndoLoading] = useState(false);
     const [items, setItems] = useState([]);
     const [totalPrice, setTotalPrice] = useState(0);
     const session = useSelector((state) => state.session);
@@ -44,11 +48,50 @@ function CompletedTransactions(props) {
     const handlePageChange = ({selected}) => {
         setActivePage(selected);
     }
-    const handleButtonItemsClicked = (items,nominal) => {
+    const handleButtonItemsClicked = (paymentId,items,nominal) => {
         setItems(JSON.parse(items));
         setTotalPrice(nominal);
-        
+        // console.log('selected payment id is: '+paymentId);
+        setPaymentId(paymentId);
         setModalItemsOpen(true);
+    }
+
+    const handleUndoButtonClicked=()=>{
+         setModalItemsOpen(false);
+        setConfirmationModalOpen(false);
+        setUndoLoading(true);
+         axiosInstance.put(`/payments?payment-id=${paymentId}&action=undo`, undefined, {
+            headers: {
+                'user-id': session.userId,
+                'user-role': session.role,
+            }
+        }).then(response=>{
+            setUndoLoading(false);
+
+            const formData = new FormData();
+            // formData.append("timestamp",Date.now());
+            formData.append("adminId",parseInt(session.userId));
+            formData.append("adminName",session.fullname);
+            formData.append("paymentId",parseInt(paymentId));
+            formData.append("action",'undo payment');
+
+            return axiosInstance.post('payment-logs',qs.stringify({
+                timestamp:Date.now(),
+                adminId:parseInt(session.userId),
+                adminName:session.fullname,
+                paymentId:parseInt(paymentId),
+                action:'undo payment'
+            }),{
+                headers:{
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'user-id': session.userId,
+                    'user-role': session.role,
+                }
+            })
+        }).catch(err=>{
+            console.log(err);
+            setUndoLoading(false);
+        })
     }
 
     const handleSearchBarInput = (event) => {
@@ -85,7 +128,7 @@ function CompletedTransactions(props) {
                                     <Table.Cell>{row.id}</Table.Cell>
                                     <Table.Cell>{row.name}</Table.Cell>
                                     <Table.Cell>{format.asString(DATE_FORMAT, new Date(row.updatedAt))}</Table.Cell>
-                                    <Table.Cell><Button primary onClick={() => handleButtonItemsClicked(row.items,row.nominal)}>Show Purchased Items</Button></Table.Cell>
+                                    <Table.Cell><Button primary onClick={() => handleButtonItemsClicked(parseInt(row.id),row.items,row.nominal)}>Show Purchased Items</Button></Table.Cell>
                                     <Table.Cell>{`Rp. ${row.nominal.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ".")}`}</Table.Cell>
                                 </Table.Row>
                             )
@@ -141,8 +184,28 @@ function CompletedTransactions(props) {
                     </Table>
                 </Modal.Content>
                 <Modal.Actions>
+                    <Button icon labelPosition='left' color='blue' onClick={()=>setConfirmationModalOpen(true)}>
+                        <Icon name='undo alternate' />
+                        Revert Payment Status
+                    </Button>
                     <Button color='green' onClick={() => setModalItemsOpen(false)}>
                         Close
+                    </Button>
+                </Modal.Actions>
+            </Modal>
+            <Modal dimmer='blurring' open={confirmationModalOpen} onClose={()=>setConfirmationModalOpen(false)}>
+                <Modal.Content>
+                    <Message icon='warning sign'
+                        header='Are You Sure To Undo This Transaction?'
+                        warning>
+                    </Message>
+                </Modal.Content>
+                <Modal.Actions>
+                    <Button negative onClick={()=>setConfirmationModalOpen(false)}>
+                        No
+                    </Button>
+                    <Button loading={undoLoading} positive onClick={handleUndoButtonClicked}>
+                        Yes
                     </Button>
                 </Modal.Actions>
             </Modal>

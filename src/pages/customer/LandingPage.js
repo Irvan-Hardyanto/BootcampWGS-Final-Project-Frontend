@@ -1,5 +1,5 @@
 import React, { useState,useRef } from 'react';
-import { Button, Grid, Menu, Input, Header } from 'semantic-ui-react';
+import { Button, Grid, Menu, Input, Header, Label } from 'semantic-ui-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
 
@@ -9,6 +9,7 @@ import ProductList from '../ProductList';
 
 const LandingPage = (props) => {
     const session = useSelector((state) => state.session);
+    const cartStore = useSelector((state) => state.cart.value);
     const [activeMenu, setActiveMenu] = useState("Products");
     const [searchQuery, setSearchQuery] = useState('')
     const dispatch = useDispatch();
@@ -37,6 +38,16 @@ const LandingPage = (props) => {
                 <Menu.Item style={{ width: '30%' }}>
                     <Input className='icon' icon='search' placeholder='Search Product(s) by name...' onChange={handleSearchBarInput} />
                 </Menu.Item>
+            )
+        }
+    }
+
+    const showCartLabel=(cart)=>{
+        if(cartStore.length>0){
+            return(
+                <Label color='red' floating>
+                    {cartStore.length}
+                </Label>
             )
         }
     }
@@ -81,7 +92,10 @@ const LandingPage = (props) => {
                             name="Cart"
                             active={activeMenu === "Cart"}
                             onClick={handleMenuItemClicked}
-                        />
+                        >
+                        Cart
+                        {showCartLabel(cartStore)}
+                        </Menu.Item>
                     </Link>
                     {/* <Menu.Item
                         name="Purchase History"

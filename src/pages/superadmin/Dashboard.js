@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Grid, Menu, Header, Button } from 'semantic-ui-react';
 import UserList from './UserList';
 import HttpLog from '../HttpLog';
+import PaymentConfirmationHistory from './PaymentConfirmationHistory';
 import logOut from '../../utils/LogOut';
 import { useDispatch, useSelector } from "react-redux";
 
@@ -24,6 +25,8 @@ function Dashboard(props) {
                     <p>You May Start Working Now...</p>
                 </div>
             )
+        } else if (clickedMenu === 'paymentconfirmationlog' ){
+            return <PaymentConfirmationHistory/>
         }
     }
     return (
@@ -57,6 +60,9 @@ function Dashboard(props) {
                         </Menu.Item>
                         <Menu.Item>
                             <Menu.Header>Logs</Menu.Header>
+                            <Menu.Menu>
+                                <Menu.Item name="Payment Confirmation Logs" onClick={() => setClickedMenu('paymentconfirmationlog')} />
+                            </Menu.Menu>
                             <Menu.Menu>
                                 <Menu.Item name="HTTP Logs" onClick={() => setClickedMenu('httplog')} />
                             </Menu.Menu>

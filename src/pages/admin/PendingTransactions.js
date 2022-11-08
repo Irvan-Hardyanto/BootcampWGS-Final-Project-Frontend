@@ -47,6 +47,8 @@ function PendingTransactions(props) {
             setPendingTransactions(response.data.result);
             setActivePage(response.data.page);
             setTotalPage(response.data.totalPage);
+        }).catch(err=>{
+            console.log(err);
         })
     }
 
@@ -72,7 +74,7 @@ function PendingTransactions(props) {
         setFinalModalOpen(false);
         closeConfirmationModal();
         //put ke database kalau transaksi nya udah beres
-        axiosInstance.put('/payments/' + paymentId, undefined, {
+        axiosInstance.put(`/payments?payment-id=${paymentId}&action=finish`, undefined, {
             headers: {
                 'user-id': session.userId,
                 'user-role': session.role,
@@ -83,8 +85,29 @@ function PendingTransactions(props) {
                 return !(transaction.id===paymentId)
             }))
             //POST ke tabel Selling
-            return axiosInstance.post('/sellings', qs.stringify({ items: items }), {
+            axiosInstance.post('/sellings', qs.stringify({ items: items }), {
                 headers: { 'content-type': 'application/x-www-form-urlencoded' }
+            })
+
+            const formData = new FormData();
+            formData.append("timestamp",Date.now());
+            formData.append("adminId",parseInt(session.userId));
+            formData.append("adminName",session.fullname);
+            formData.append("paymentId",parseInt(paymentId));
+            formData.append("action",'finish payment');
+
+            return axiosInstance.post('payment-logs',qs.stringify({
+                timestamp:Date.now(),
+                adminId:parseInt(session.userId),
+                adminName:session.fullname,
+                paymentId:parseInt(paymentId),
+                action:'finish payment'
+            }),{
+                headers:{
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'user-id': session.userId,
+                    'user-role': session.role,
+                }
             })
         }).catch(err => {
             console.log(err);

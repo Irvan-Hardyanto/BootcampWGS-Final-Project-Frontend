@@ -22,7 +22,7 @@ const ProductList = (props) => {
     //ketika 'effect' yg ini jalan, harusnya effect yang di bawah gak ketriger
     //tapi ternyata ketika 'effect' ini jalan, 'effect' yang bawah juga ke trigger, jadi ngaco isi cart nya
     useEffect(() => {
-        axiosInstance.get('/products').then(response => {
+        axiosInstance.get('/product-list').then(response => {
             let products = response.data;
             dispatch(initProducts({ products: response.data }))
         }).catch(error => {
@@ -97,14 +97,10 @@ const ProductList = (props) => {
             if(query===''){
                 return product
             }else{
-                return product.name.toLowerCase().includes(query);
+                return product.name.toLowerCase().includes(query.toLowerCase());
             }
         })
     }
-    //panggil API nya cukup sekali saja di awal..
-    useEffect(() => {
-        console.log('FETCHING PRODUCT FROM DATABASE')
-    }, []);
 
     return (
         <Card.Group centered itemsPerRow={6}>

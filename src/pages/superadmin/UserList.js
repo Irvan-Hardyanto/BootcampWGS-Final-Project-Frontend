@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Header, Table, Image, Button, Input, Pagination, Icon, Modal, Message } from 'semantic-ui-react';
 import { useSelector } from "react-redux";
 import axios from 'axios';
-import useTable from '../../hooks/useTable';
 import { faker } from '@faker-js/faker';
+import PaginationBar from "../../components/PaginationBar";
 
 const BASE_URL = "http://localhost:9000";
 
@@ -14,32 +14,39 @@ const axiosInstance = axios.create({
 const UserList = (props) => {
     const ROWS_PER_PAGE = 6;
     const [users, setUsers] = useState([]);
-    const [filteredUsers,setFilteredUsers] =useState([]);
-    const [activePage, setActivePage] = useState(1);
+    
+
+    const [activePage, setActivePage] = useState(0);
+    const [totalRows, setTotalRows] =useState(0);
+    const [totalPage,setTotalPage] = useState(0)
+    const [searchQuery, setSearchQuery] = useState('');
+
     const [modalContent, setModalContent] = useState('');
     const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const { slice, range } = useTable(filteredUsers, activePage, ROWS_PER_PAGE);
+
     const session = useSelector((state) => state.session);
     const [userId,setUserId]=useState(0);
     const [newRole,setNewRole]=useState(0);
 
     useEffect(() => {
-        axiosInstance.get(props.url, {
+        axiosInstance.get(props.url+`&search-query=${searchQuery}&page=${activePage}&limit=${ROWS_PER_PAGE}`, {
             headers: {
                 'user-id': session.userId,
                 'user-role': session.role
             }
         }).then(response => {
-            setUsers(response.data);
-            setFilteredUsers(response.data);
+            setUsers(response.data.result);
+            setTotalPage(response.data.totalPage);
+            setTotalRows(response.data.totalRows);
+            setActivePage(response.data.page);
         }).catch(err => {
             console.log(err);
         })
-    }, [props.url])
+    }, [props.url,activePage,searchQuery])
 
-    const handlePageChange = (event, data) => {
-        setActivePage(data.activePage);
+    const handlePageChange = ({selected}) => {
+        setActivePage(selected);
     }
 
     const deleteUser = (userId) => {
@@ -96,22 +103,7 @@ const UserList = (props) => {
     }
 
     const handleSearchBarInput = (event) => {
-        const query = event.target.value.toLowerCase();
-        setFilteredUsers(users.filter(user => {
-            if (query === '') {
-                return user
-            } else {
-                console.log('query is: '+query)
-                console.log('user is: ');
-                for (const [key, value] of Object.entries(user)) {
-                    console.log(`${key}: ${value}`);
-                }
-                return user.name.toLowerCase().includes(query) ||
-                    (user.email && user.email.toLowerCase().includes(query))||
-                    (user.mobile && user.mobile.toLowerCase().includes(query))||
-                    user.userName.toLowerCase().includes(query)
-            }
-        }))
+        setSearchQuery(event.target.value.toLowerCase());
     }
 
     return (
@@ -140,7 +132,7 @@ const UserList = (props) => {
                     </Table.Header>
 
                     <Table.Body>
-                        {slice.map((user, idx) => {
+                        {users.map((user, idx) => {
                             return (
                                 <Table.Row key={user.id}>
                                     <Table.Cell> {user.id}</Table.Cell>
@@ -164,8 +156,10 @@ const UserList = (props) => {
                     </Table.Body>
                 </Table>
             </Grid.Row>
-            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }}>
-                <Pagination defaultActivePage={1} totalPages={range.length} onPageChange={handlePageChange} />
+            <Grid.Row style={{ height: '10%', paddingBottom: "0px" }} centered>
+                <Grid.Column textAlign='center'>
+                    <PaginationBar totalPage={totalPage} handlePageChange={handlePageChange}/>
+                </Grid.Column>
             </Grid.Row>
 
             {/* Modal konfirmasi angkat ke admin / turunkan dari admin */}
